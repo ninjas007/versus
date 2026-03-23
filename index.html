@@ -182,6 +182,40 @@
 				align-items: start;
 			}
 
+			.bracket-shell {
+				position: relative;
+				padding-top: 56px;
+			}
+
+			.bracket-title {
+				position: absolute;
+				top: 14px;
+				left: 16px;
+				z-index: 5;
+				padding: 8px 14px;
+				border-radius: 10px;
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				background: rgba(15, 23, 38, 0.88);
+				backdrop-filter: blur(8px);
+				box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+			}
+
+			.bracket-title strong {
+				display: block;
+				font-family: "Oswald", sans-serif;
+				font-size: 16px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: var(--text);
+			}
+
+			.bracket-title span {
+				display: block;
+				margin-top: 2px;
+				font-size: 12px;
+				color: var(--muted);
+			}
+
 			#bracket {
 				border-radius: 8px;
 				overflow: hidden;
@@ -684,7 +718,10 @@
 			</header>
 
 			<section class="layout">
-				<div id="bracket"></div>
+				<div class="bracket-shell">
+					<div id="bracket-title" class="bracket-title"></div>
+					<div id="bracket"></div>
+				</div>
 
 				<aside class="panel">
 					<div id="category-summary" class="category-summary"></div>
@@ -801,6 +838,7 @@
 			const loginBtn = document.getElementById("login-btn");
 			const logoutBtn = document.getElementById("logout-btn");
 			const loginMetaEl = document.getElementById("login-meta");
+			const bracketTitleEl = document.getElementById("bracket-title");
 			const categoryStrip = document.getElementById("category-strip");
 			const scheduleStrip = document.getElementById("schedule-strip");
 			const categorySummary = document.getElementById("category-summary");
@@ -856,17 +894,21 @@
 			function loadGlobalState(categoryId) {
 				try {
 					const raw = localStorage.getItem(getGlobalStorageKey(categoryId));
-					if (!raw) return { totals: {}, updatedAt: null };
+					if (!raw) return { totals: {}, finalized: {}, updatedAt: null };
 					const parsed = JSON.parse(raw);
 					return {
 						totals:
 							parsed?.totals && typeof parsed.totals === "object"
 								? parsed.totals
 								: {},
+						finalized:
+							parsed?.finalized && typeof parsed.finalized === "object"
+								? parsed.finalized
+								: {},
 						updatedAt: parsed?.updatedAt ?? null,
 					};
 				} catch {
-					return { totals: {}, updatedAt: null };
+					return { totals: {}, finalized: {}, updatedAt: null };
 				}
 			}
 
@@ -978,6 +1020,32 @@
 			function getTotalFor(matchId, tKey) {
 				const value = runtime.globalState?.totals?.[matchId]?.[tKey];
 				return Number.isFinite(Number(value)) ? Number(value) : 0;
+			}
+
+			function hashString(value) {
+				let hash = 0;
+				const str = String(value || "");
+				for (let i = 0; i < str.length; i++) {
+					hash = (hash << 5) - hash + str.charCodeAt(i);
+					hash |= 0;
+				}
+				return Math.abs(hash);
+			}
+
+			function getDummyScores(matchId, game) {
+				const base = hashString(matchId);
+				let aScore = 3 + (base % 8);
+				let bScore = 2 + (Math.floor(base / 7) % 8);
+				if (aScore === bScore) {
+					const higherSeedIndex =
+						Number(game?.[0]?.seed || 99) <= Number(game?.[1]?.seed || 99) ? 0 : 1;
+					if (higherSeedIndex === 0) {
+						aScore += 1;
+					} else {
+						bScore += 1;
+					}
+				}
+				return [aScore, bScore];
 			}
 
 			function getCurrentRoundIndex(data) {
@@ -1219,6 +1287,14 @@
 				`;
 			}
 
+			function renderBracketTitle() {
+				if (!runtime?.category || !bracketTitleEl) return;
+				bracketTitleEl.innerHTML = `
+					<strong>${runtime.category.label}</strong>
+					<span>${runtime.category.subtitle}</span>
+				`;
+			}
+
 			function renderLoginMeta() {
 				if (!currentEmail) {
 					loginMetaEl.textContent =
@@ -1373,6 +1449,126 @@
 				return { ok: true, status };
 			}
 
+			function getWinnerFromScores(game) {
+				if (!game || game.length !== 2) return null;
+				const aScore = Number(game[0]?.score);
+				const bScore = Number(game[1]?.score);
+				if (!Number.isFinite(aScore) || !Number.isFinite(bScore)) return null;
+				if (aScore === bScore) {
+					return Number(game?.[0]?.seed || 99) <= Number(game?.[1]?.seed || 99)
+						? game[0]
+						: game[1];
+				}
+				return aScore > bScore ? game[0] : game[1];
+			}
+
+			function buildAdvancedTeam(team) {
+				return {
+					id: team.id,
+					name: team.name,
+					seed: team.seed,
+					image: team.image,
+				};
+			}
+
+			function applyWinnerToNextRound(data, roundIndex, gameIndex, winner) {
+				if (!winner || !data?.[roundIndex + 1]) return false;
+				const nextRound = data[roundIndex + 1];
+				const nextGameIndex = Math.floor(gameIndex / 2);
+				const nextTeamIndex = gameIndex % 2;
+				const nextGame = nextRound[nextGameIndex];
+				if (!nextGame || nextGame.length === 0) return false;
+
+				if (nextGame.length === 1) {
+					const current = nextGame[0];
+					if (current?.id === "champion" || current?.name === "Champion") {
+						nextGame[0] = buildAdvancedTeam(winner);
+						return true;
+					}
+					return false;
+				}
+
+				const currentTeam = nextGame[nextTeamIndex];
+				if (currentTeam?.id === winner.id && currentTeam?.name === winner.name) {
+					return false;
+				}
+
+				nextGame[nextTeamIndex] = buildAdvancedTeam(winner);
+				return true;
+			}
+
+			function finalizeClosedMatches() {
+				if (!bracket) return;
+				const currentData = bracket.getData() || [];
+				const data = cloneData(currentData);
+				let changed = false;
+				let globalChanged = false;
+
+				for (let roundIndex = 0; roundIndex < data.length; roundIndex++) {
+					const round = data[roundIndex] || [];
+					for (let gameIndex = 0; gameIndex < round.length; gameIndex++) {
+						const game = round[gameIndex];
+						if (!hasResolvedTeams(game)) continue;
+
+						const status = getMatchStatus(roundIndex, gameIndex);
+						const matchId = getMatchId(roundIndex, gameIndex, game);
+						const aKey = teamKey(game[0]);
+						const bKey = teamKey(game[1]);
+						let aVotes = getTotalFor(matchId, aKey);
+						let bVotes = getTotalFor(matchId, bKey);
+
+						if (status.key === "closed" && !runtime.globalState.finalized?.[matchId]) {
+							if (aVotes <= 0 && bVotes <= 0) {
+								[aVotes, bVotes] = getDummyScores(matchId, game);
+							} else if (aVotes === bVotes) {
+								const higherSeedIndex =
+									Number(game?.[0]?.seed || 99) <= Number(game?.[1]?.seed || 99)
+										? 0
+										: 1;
+								if (higherSeedIndex === 0) {
+									aVotes += 1;
+								} else {
+									bVotes += 1;
+								}
+							}
+
+							runtime.globalState.totals[matchId] = {
+								...(runtime.globalState.totals[matchId] || {}),
+								[aKey]: aVotes,
+								[bKey]: bVotes,
+							};
+							runtime.globalState.finalized[matchId] = {
+								closedAt: nowIso(),
+								winnerKey: aVotes > bVotes ? aKey : bKey,
+							};
+							globalChanged = true;
+						}
+
+						if (status.key === "closed" && (aVotes > 0 || bVotes > 0)) {
+							game[0].score = aVotes;
+							game[1].score = bVotes;
+						}
+
+						if (status.key === "closed") {
+							const winner = getWinnerFromScores(game);
+							if (winner) {
+								if (applyWinnerToNextRound(data, roundIndex, gameIndex, winner)) {
+									changed = true;
+								}
+							}
+						}
+					}
+				}
+
+				if (globalChanged) {
+					saveGlobalState();
+				}
+				if (changed || globalChanged) {
+					createBracket(data);
+					hydrateScoresFromGlobal();
+				}
+			}
+
 			function castVote(roundIndex, gameIndex, teamIndex, voteAmount = 1) {
 				if (!currentEmail || !userState) {
 					renderLoginModal(() =>
@@ -1415,13 +1611,6 @@
 				});
 				userState.voteLog = userState.voteLog.slice(-30);
 				saveUserState(currentEmail, userState);
-
-				if (bracket.isRoundComplete(roundIndex)) {
-					bracket.advanceRound(roundIndex, {
-						tieBreaker: "higher-seed",
-						createRounds: true,
-					});
-				}
 
 				renderScheduleStrip();
 				renderVotePanel();
@@ -1541,14 +1730,12 @@
 					return;
 				}
 
-				const permission = canVoteMatch(roundIndex, gameIndex);
-				if (!permission.ok) {
-					statusEl.textContent = permission.message;
+				const game = bracket.getData()?.[roundIndex]?.[gameIndex];
+				if (!game || game.length !== 2 || !hasResolvedTeams(game)) {
+					statusEl.textContent = "Match ini belum punya dua tim pasti.";
 					return;
 				}
-
-				const game = bracket.getData()?.[roundIndex]?.[gameIndex];
-				if (!game || game.length !== 2) return;
+				const matchStatus = getMatchStatus(roundIndex, gameIndex);
 
 				syncMatchScoresFromGlobal(roundIndex, gameIndex);
 				const refreshed = bracket.getData()?.[roundIndex]?.[gameIndex];
@@ -1587,7 +1774,9 @@
 				};
 
 				const modalIntroText =
-					permission.status.key === "upcoming"
+					matchStatus.key === "closed"
+						? "Voting untuk pertandingan ini sudah ditutup. Berikut hasil akhirnya."
+						: matchStatus.key === "upcoming"
 						? "Voting sudah dibuka. Match ini akan segera dimulai."
 						: "Voting sedang dibuka untuk pertandingan ini.";
 
@@ -1612,7 +1801,7 @@
 						</div>
 					</div>
 					<div class="note">Jadwal: ${formatDateTime(schedule.start)} - ${formatDateTime(schedule.end)}</div>
-					<div id="modal-countdown" class="note" style="margin-top:4px">${permission.status.countdownLabel}</div>
+					<div id="modal-countdown" class="note" style="margin-top:4px">${matchStatus.countdownLabel}</div>
 					<div id="modal-vote-actions" class="modal-actions">
 						<div class="vs-card">
 							<div class="vs-head">
@@ -1655,6 +1844,10 @@
 				`;
 				openModal();
 
+				if (matchStatus.key === "closed") {
+					renderVoteResultState();
+				}
+
 				const countdownEl = document.getElementById("modal-countdown");
 				const updateModalCountdown = () => {
 					const latestStatus = getMatchStatus(roundIndex, gameIndex);
@@ -1671,7 +1864,9 @@
 				};
 
 				updateModalCountdown();
-				modalCountdownInterval = setInterval(updateModalCountdown, 1000);
+				if (matchStatus.key !== "closed") {
+					modalCountdownInterval = setInterval(updateModalCountdown, 1000);
+				}
 
 				const sanitizeVoteInput = (input) => {
 					if (!input) return;
@@ -1746,6 +1941,8 @@
 
 				createBracket(cloneData(baseData));
 				hydrateScoresFromGlobal();
+				finalizeClosedMatches();
+				renderBracketTitle();
 				renderCategoryBadges();
 				renderScheduleStrip();
 				renderCategorySummary();
@@ -1798,11 +1995,6 @@
 				const round = data[roundIndex] || [];
 				const match = findMatchByTeamName(round, teamName);
 				if (!match) return;
-				const permission = canVoteMatch(roundIndex, match.gameIndex);
-				if (!permission.ok) {
-					statusEl.textContent = permission.message;
-					return;
-				}
 				renderVoteModal({
 					roundIndex,
 					gameIndex: match.gameIndex,
@@ -1843,9 +2035,9 @@
 			renderStatus();
 			setInterval(() => {
 				if (!bracket) return;
+				finalizeClosedMatches();
 				renderScheduleStrip();
 				renderCategorySummary();
-				renderVotePanel();
 			}, 1000);
 		</script>
 	</body>
