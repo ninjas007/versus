@@ -1,0 +1,1852 @@
+<!doctype html>
+<html lang="id">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Tournament Voting Arena</title>
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Rajdhani:wght@400;600;700&display=swap"
+			rel="stylesheet"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://unpkg.com/gracket@2.1.1/dist/style.css"
+		/>
+
+		<style>
+			:root {
+				--bg-0: #0b0f16;
+				--bg-1: #0f1523;
+				--bg-2: #141b2b;
+				--panel: #0f1726;
+				--panel-border: rgba(255, 255, 255, 0.08);
+				--text: #e8edf7;
+				--muted: #9aa6c5;
+				--accent-blue: #3498db;
+				--accent-red: #e74c3c;
+				--accent-gold: #ffd24d;
+				--accent-green: #2ecc71;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			body {
+				margin: 0;
+				font-family: "Rajdhani", sans-serif;
+				color: var(--text);
+				background:
+					radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.06), transparent 45%),
+					radial-gradient(circle at 85% 30%, rgba(52, 152, 219, 0.12), transparent 45%),
+					linear-gradient(180deg, var(--bg-0), var(--bg-1) 55%, var(--bg-2));
+				min-height: 100vh;
+			}
+
+			.page {
+				display: grid;
+				gap: 24px;
+				padding: 28px 24px 40px;
+			}
+
+			header {
+				display: grid;
+				gap: 14px;
+			}
+
+			header h1 {
+				margin: 0;
+				font-family: "Oswald", sans-serif;
+				font-size: 30px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+			}
+
+			header p {
+				margin: 0;
+				color: var(--muted);
+				font-size: 15px;
+			}
+
+			.category-strip {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 10px;
+			}
+
+			.schedule-strip {
+				display: flex;
+				gap: 10px;
+				overflow-x: auto;
+				padding-bottom: 4px;
+				scrollbar-width: thin;
+			}
+
+			.schedule-strip::-webkit-scrollbar {
+				height: 8px;
+			}
+
+			.schedule-strip::-webkit-scrollbar-thumb {
+				background: rgba(255, 255, 255, 0.18);
+				border-radius: 999px;
+			}
+
+			.schedule-card {
+				min-width: 210px;
+				padding: 10px 12px;
+				border-radius: 12px;
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				background: rgba(255, 255, 255, 0.05);
+				flex: 0 0 auto;
+				cursor: pointer;
+			}
+
+			.schedule-card.live {
+				border-color: rgba(46, 204, 113, 0.45);
+				box-shadow: inset 0 0 0 1px rgba(46, 204, 113, 0.15);
+			}
+
+			.schedule-card:hover {
+				transform: translateY(-1px);
+				border-color: rgba(255, 255, 255, 0.18);
+			}
+
+			.team-avatar,
+			.modal-avatar,
+			.bracket-avatar {
+				width: 36px;
+				height: 36px;
+				border-radius: 50%;
+				object-fit: cover;
+				flex: 0 0 auto;
+				border: 1px solid rgba(255, 255, 255, 0.16);
+				background: rgba(255, 255, 255, 0.08);
+			}
+
+			.schedule-top {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 8px;
+				margin-bottom: 6px;
+			}
+
+			.schedule-title {
+				font-family: "Oswald", sans-serif;
+				font-size: 11px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: var(--accent-gold);
+			}
+
+			.schedule-match {
+				font-size: 13px;
+				font-weight: 700;
+				line-height: 1.3;
+			}
+
+			.schedule-time {
+				margin-top: 4px;
+				font-size: 12px;
+				color: var(--muted);
+				line-height: 1.35;
+			}
+
+			.category-badge {
+				padding: 10px 14px;
+				border-radius: 999px;
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				background: rgba(255, 255, 255, 0.06);
+				color: var(--text);
+				cursor: pointer;
+				font-family: "Oswald", sans-serif;
+				font-size: 12px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				transition: 0.2s ease;
+			}
+
+			.category-badge.active {
+				background: linear-gradient(135deg, rgba(52, 152, 219, 0.38), rgba(255, 210, 77, 0.24));
+				border-color: rgba(255, 210, 77, 0.45);
+				box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+			}
+
+			.layout {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr) 340px;
+				gap: 22px;
+				align-items: start;
+			}
+
+			#bracket {
+				border-radius: 8px;
+				overflow: hidden;
+				border: 1px solid rgba(255, 255, 255, 0.05);
+				box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+				cursor: default;
+			}
+
+			#bracket .g_round {
+				margin-right: 88px;
+			}
+
+			#bracket .g_round:last-child {
+				margin-right: 40px;
+			}
+
+			#bracket .g_round:not(:first-child) .g_game {
+				margin-left: -10px;
+			}
+
+			#bracket .g_team h3 {
+				gap: 8px;
+			}
+
+			#bracket .g_team-name {
+				overflow: hidden;
+			}
+
+			.panel {
+				background: var(--panel);
+				border: 1px solid var(--panel-border);
+				border-radius: 10px;
+				padding: 18px;
+				box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+				position: sticky;
+				top: 20px;
+			}
+
+			.panel h2,
+			.panel h3 {
+				margin: 0 0 8px;
+				font-family: "Oswald", sans-serif;
+				font-size: 18px;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+			}
+
+			.panel p {
+				margin: 0 0 16px;
+				color: var(--muted);
+				font-size: 14px;
+			}
+
+			.category-summary {
+				margin-bottom: 14px;
+				padding: 12px;
+				border-radius: 10px;
+				border: 1px solid rgba(255, 255, 255, 0.08);
+				background: rgba(255, 255, 255, 0.03);
+			}
+
+			.category-summary strong {
+				display: block;
+				font-family: "Oswald", sans-serif;
+				font-size: 15px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				margin-bottom: 6px;
+			}
+
+			.summary-row {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+
+			.summary-pill {
+				padding: 6px 10px;
+				border-radius: 999px;
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				background: rgba(255, 255, 255, 0.06);
+				font-size: 12px;
+				color: var(--muted);
+			}
+
+			.login-box {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				gap: 10px;
+				align-items: center;
+				padding: 10px;
+				border-radius: 10px;
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				background: rgba(0, 0, 0, 0.18);
+				margin-bottom: 14px;
+			}
+
+			.login-box input,
+			.modal-input {
+				width: 100%;
+				padding: 10px;
+				border-radius: 8px;
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				background: rgba(255, 255, 255, 0.06);
+				color: var(--text);
+				outline: none;
+				font-family: inherit;
+			}
+
+			.login-box button,
+			.primary-btn,
+			.ghost-btn,
+			.icon-btn {
+				font-family: "Oswald", sans-serif;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+			}
+
+			.login-box button,
+			.primary-btn {
+				padding: 10px 12px;
+				border-radius: 10px;
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				background: rgba(255, 255, 255, 0.08);
+				color: var(--text);
+				cursor: pointer;
+			}
+
+			.login-meta,
+			.status,
+			.note {
+				color: var(--muted);
+				font-size: 13px;
+				line-height: 1.4;
+			}
+
+			.round-label {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 6px 12px;
+				background: linear-gradient(180deg, #e74c3c, #b3392c);
+				border-radius: 4px;
+				font-size: 12px;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				margin-bottom: 14px;
+			}
+
+			.match {
+				border: 1px solid rgba(255, 255, 255, 0.08);
+				border-radius: 10px;
+				padding: 12px;
+				margin-bottom: 12px;
+				background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+			}
+
+			.match.live {
+				border-color: rgba(46, 204, 113, 0.45);
+				box-shadow: inset 0 0 0 1px rgba(46, 204, 113, 0.15);
+			}
+
+			.match.locked {
+				opacity: 0.72;
+			}
+
+			.match-meta-top {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				gap: 12px;
+				margin-bottom: 8px;
+			}
+
+			.match-code {
+				font-family: "Oswald", sans-serif;
+				font-size: 12px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: var(--accent-gold);
+			}
+
+			.match-state {
+				padding: 4px 10px;
+				border-radius: 999px;
+				font-size: 11px;
+				font-weight: 700;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				border: 1px solid rgba(255, 255, 255, 0.12);
+			}
+
+			.match-state.live {
+				color: #0d1b12;
+				background: var(--accent-green);
+				border-color: transparent;
+			}
+
+			.match-state.upcoming {
+				color: var(--accent-blue);
+				background: rgba(52, 152, 219, 0.12);
+			}
+
+			.match-state.closed {
+				color: var(--accent-red);
+				background: rgba(231, 76, 60, 0.12);
+			}
+
+			.team-row {
+				display: grid;
+				grid-template-columns: 1fr auto;
+				align-items: center;
+				gap: 10px;
+				padding: 6px 8px;
+				border-radius: 6px;
+			}
+
+			.team-row + .team-row {
+				margin-top: 6px;
+			}
+
+			.team-meta {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				font-weight: 600;
+				font-size: 15px;
+			}
+
+			.seed {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				min-width: 26px;
+				height: 26px;
+				border-radius: 4px;
+				background: rgba(0, 0, 0, 0.45);
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				font-size: 12px;
+				font-weight: 700;
+			}
+
+			.score {
+				font-weight: 700;
+				color: var(--accent-gold);
+				min-width: 26px;
+				text-align: center;
+			}
+
+			.vote-btn {
+				padding: 6px 10px;
+				border-radius: 6px;
+				border: 1px solid rgba(255, 255, 255, 0.18);
+				background: rgba(255, 255, 255, 0.08);
+				color: var(--text);
+				cursor: pointer;
+			}
+
+			.vote-btn[disabled] {
+				opacity: 0.42;
+				cursor: not-allowed;
+			}
+
+			.match-time {
+				margin-top: 10px;
+				padding-top: 10px;
+				border-top: 1px solid rgba(255, 255, 255, 0.08);
+				color: var(--muted);
+				font-size: 12px;
+				line-height: 1.45;
+			}
+
+			.timer-bar {
+				width: 100%;
+				height: 4px;
+				margin-top: 6px;
+				border-radius: 999px;
+				background: rgba(255, 255, 255, 0.08);
+				overflow: hidden;
+			}
+
+			.timer-progress {
+				height: 100%;
+				background: linear-gradient(90deg, #2ecc71, #ffd24d);
+			}
+
+			.panel-footer {
+				margin-top: 16px;
+				display: flex;
+				gap: 10px;
+				flex-wrap: wrap;
+			}
+
+			.ghost-btn {
+				padding: 8px 12px;
+				border-radius: 8px;
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				background: transparent;
+				color: var(--muted);
+				cursor: pointer;
+				font-size: 12px;
+			}
+
+			.modal-backdrop[hidden] {
+				display: none;
+			}
+
+			.modal-backdrop {
+				position: fixed;
+				inset: 0;
+				display: grid;
+				place-items: center;
+				padding: 18px;
+				background: rgba(0, 0, 0, 0.62);
+				backdrop-filter: blur(6px);
+				z-index: 9999;
+			}
+
+			.modal {
+				width: min(560px, 100%);
+				background: linear-gradient(180deg, rgba(20, 27, 43, 0.92), rgba(15, 23, 38, 0.96));
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				border-radius: 12px;
+				overflow: hidden;
+				box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+			}
+
+			.modal-head {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				padding: 14px 16px;
+				border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+			}
+
+			.modal-head h3 {
+				margin: 0;
+				font-size: 16px;
+			}
+
+			.icon-btn {
+				width: 34px;
+				height: 34px;
+				border-radius: 8px;
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				background: rgba(255, 255, 255, 0.06);
+				color: var(--text);
+				cursor: pointer;
+			}
+
+			.modal-body {
+				padding: 14px 16px 16px;
+			}
+
+			.modal-sub {
+				margin: 0 0 12px;
+				color: var(--muted);
+				font-size: 14px;
+			}
+
+			.vs {
+				display: grid;
+				grid-template-columns: 1fr auto 1fr;
+				gap: 10px;
+				align-items: center;
+				margin: 10px 0 14px;
+			}
+
+			.vs-card {
+				padding: 12px;
+				border-radius: 10px;
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				background: rgba(0, 0, 0, 0.22);
+			}
+
+			.vs-team {
+				margin: 0 0 6px;
+				font-family: "Oswald", sans-serif;
+				font-size: 16px;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+			}
+
+			.vs-head {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				margin-bottom: 6px;
+			}
+
+			.modal-avatar {
+				width: 56px;
+				height: 56px;
+			}
+
+			.vs-meta {
+				display: flex;
+				justify-content: space-between;
+				gap: 10px;
+				color: var(--muted);
+				font-size: 13px;
+			}
+
+			.bracket-team-decor {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+			}
+
+			.bracket-avatar {
+				width: 22px;
+				height: 22px;
+			}
+
+
+			.vs-pill {
+				padding: 6px 10px;
+				border-radius: 999px;
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				background: rgba(255, 255, 255, 0.06);
+				font-family: "Oswald", sans-serif;
+				font-size: 12px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+
+			.modal-actions,
+			.pay-grid {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 10px;
+				margin-top: 12px;
+			}
+
+			.danger-btn {
+				background: linear-gradient(180deg, rgba(231, 76, 60, 0.24), rgba(231, 76, 60, 0.08));
+			}
+
+			.pay-card {
+				text-align: left;
+				padding: 12px;
+				border-radius: 12px;
+				border: 1px solid rgba(255, 255, 255, 0.12);
+				background: rgba(255, 255, 255, 0.04);
+				color: var(--text);
+				cursor: pointer;
+			}
+
+			.pay-card strong {
+				display: block;
+				margin-bottom: 6px;
+				font-family: "Oswald", sans-serif;
+				font-size: 14px;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+
+			.pay-card span,
+			.mono {
+				font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+			}
+
+			@media (max-width: 1100px) {
+				.layout {
+					grid-template-columns: 1fr;
+				}
+
+				.panel {
+					position: static;
+				}
+			}
+
+			@media (max-width: 640px) {
+				.page {
+					padding: 20px 14px 30px;
+				}
+
+				.vs,
+				.modal-actions,
+				.pay-grid,
+				.login-box {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="page">
+			<header>
+				<div>
+					<h1>Tournament Voting Arena</h1>
+					<p>
+						Semua match yang sudah punya dua tim asli bisa di-vote.
+						Info live dan jadwal berikutnya ditampilkan di atas.
+					</p>
+				</div>
+				<div id="category-strip" class="category-strip"></div>
+				<div id="schedule-strip" class="schedule-strip"></div>
+			</header>
+
+			<section class="layout">
+				<div id="bracket"></div>
+
+				<aside class="panel">
+					<div id="category-summary" class="category-summary"></div>
+					<h2>Voting Panel</h2>
+					<p>
+						Match yang masih placeholder seperti winner vs winner akan
+						terkunci sampai timnya sudah pasti.
+					</p>
+					<div class="login-box">
+						<input
+							id="email-input"
+							type="email"
+							placeholder="login email (dummy)..."
+							autocomplete="email"
+						/>
+						<button id="login-btn" type="button">Login</button>
+					</div>
+					<div class="panel-footer" style="margin-top:0; margin-bottom:14px;">
+						<button id="logout-btn" class="ghost-btn" type="button">
+							Logout
+						</button>
+					</div>
+					<div id="login-meta" class="login-meta"></div>
+					<div class="panel-footer">
+						<button id="reset-bracket" class="ghost-btn" type="button">
+							Reset Data
+						</button>
+					</div>
+					<div id="status" class="status"></div>
+				</aside>
+			</section>
+		</div>
+
+		<div id="modal-backdrop" class="modal-backdrop" hidden>
+			<div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+				<div class="modal-head">
+					<h3 id="modal-title">Vote</h3>
+					<button id="modal-close" class="icon-btn" aria-label="Close modal">
+						x
+					</button>
+				</div>
+				<div id="modal-body" class="modal-body"></div>
+			</div>
+		</div>
+
+		<script type="module">
+			import {
+				Gracket,
+				generateTournamentWithByes,
+			} from "https://unpkg.com/gracket@2.1.1/dist/index.js";
+
+			const FREE_VOTES = 1;
+			const STORAGE_SESSION_KEY = "bracketSessionEmail:v2";
+			const STORAGE_USERS_INDEX = "bracketUsersIndex:v2";
+			const STORAGE_CATEGORY_KEY = "bracketActiveCategory:v2";
+			const USER_PREFIX = "bracketUserState:v2:";
+			const GLOBAL_PREFIX = "bracketGlobalTotals:v2:";
+
+			const CATEGORY_DEFS = [
+				{
+					id: "one-piece",
+					label: "Anime One Piece",
+					subtitle: "Who wins the battle?",
+					teams: [
+						{ name: "Luffy", id: "luffy", seed: 1 },
+						{ name: "Zoro", id: "zoro", seed: 2 },
+						{ name: "Sanji", id: "sanji", seed: 3 },
+						{ name: "Law", id: "law", seed: 4 },
+						{ name: "Shanks", id: "shanks", seed: 5 },
+						{ name: "Ace", id: "ace", seed: 6 },
+						{ name: "Sabo", id: "sabo", seed: 7 },
+						{ name: "Mihawk", id: "mihawk", seed: 8 },
+					],
+				},
+				{
+					id: "football",
+					label: "Football Clash",
+					subtitle: "Big clubs face off",
+					teams: [
+						{ name: "Real Madrid", id: "real-madrid", seed: 1 },
+						{ name: "Barcelona", id: "barcelona", seed: 2 },
+						{ name: "Liverpool", id: "liverpool", seed: 3 },
+						{ name: "Arsenal", id: "arsenal", seed: 4 },
+						{ name: "Bayern", id: "bayern", seed: 5 },
+						{ name: "PSG", id: "psg", seed: 6 },
+						{ name: "Inter", id: "inter", seed: 7 },
+						{ name: "Milan", id: "milan", seed: 8 },
+					],
+				},
+				{
+					id: "esports",
+					label: "Esports Arena",
+					subtitle: "Squad battle voting",
+					teams: [
+						{ name: "RRQ", id: "rrq", seed: 1 },
+						{ name: "EVOS", id: "evos", seed: 2 },
+						{ name: "ONIC", id: "onic", seed: 3 },
+						{ name: "Geek Fam", id: "geek-fam", seed: 4 },
+						{ name: "Bigetron", id: "bigetron", seed: 5 },
+						{ name: "Alter Ego", id: "alter-ego", seed: 6 },
+						{ name: "Liquid ID", id: "liquid-id", seed: 7 },
+						{ name: "Aura", id: "aura", seed: 8 },
+					],
+				},
+			];
+
+			const roundLabels = ["Round 1", "Semifinal", "Final", "Champion"];
+
+			const modalBackdrop = document.getElementById("modal-backdrop");
+			const modalTitle = document.getElementById("modal-title");
+			const modalBody = document.getElementById("modal-body");
+			const statusEl = document.getElementById("status");
+			const emailInput = document.getElementById("email-input");
+			const loginBtn = document.getElementById("login-btn");
+			const logoutBtn = document.getElementById("logout-btn");
+			const loginMetaEl = document.getElementById("login-meta");
+			const categoryStrip = document.getElementById("category-strip");
+			const scheduleStrip = document.getElementById("schedule-strip");
+			const categorySummary = document.getElementById("category-summary");
+
+			let bracket = null;
+			let isHydrating = false;
+			let pendingVote = null;
+			let afterLoginAction = null;
+			let modalCountdownInterval = null;
+			let currentEmail = loadSessionEmail();
+			let userState = currentEmail ? loadUserState(currentEmail) : null;
+			let currentCategoryId =
+				localStorage.getItem(STORAGE_CATEGORY_KEY) || CATEGORY_DEFS[0].id;
+			let runtime = {};
+
+			function nowIso() {
+				return new Date().toISOString();
+			}
+
+			function normalizeEmail(email) {
+				return String(email || "").trim().toLowerCase();
+			}
+
+			function loadSessionEmail() {
+				return normalizeEmail(localStorage.getItem(STORAGE_SESSION_KEY));
+			}
+
+			function saveSessionEmail(email) {
+				localStorage.setItem(STORAGE_SESSION_KEY, normalizeEmail(email));
+			}
+
+			function loadUsersIndex() {
+				try {
+					const raw = localStorage.getItem(STORAGE_USERS_INDEX);
+					const parsed = raw ? JSON.parse(raw) : [];
+					return Array.isArray(parsed) ? parsed : [];
+				} catch {
+					return [];
+				}
+			}
+
+			function saveUsersIndex(emails) {
+				localStorage.setItem(
+					STORAGE_USERS_INDEX,
+					JSON.stringify(Array.from(new Set(emails)).slice(0, 100)),
+				);
+			}
+
+			function getGlobalStorageKey(categoryId) {
+				return `${GLOBAL_PREFIX}${categoryId}`;
+			}
+
+			function loadGlobalState(categoryId) {
+				try {
+					const raw = localStorage.getItem(getGlobalStorageKey(categoryId));
+					if (!raw) return { totals: {}, updatedAt: null };
+					const parsed = JSON.parse(raw);
+					return {
+						totals:
+							parsed?.totals && typeof parsed.totals === "object"
+								? parsed.totals
+								: {},
+						updatedAt: parsed?.updatedAt ?? null,
+					};
+				} catch {
+					return { totals: {}, updatedAt: null };
+				}
+			}
+
+			function saveGlobalState() {
+				runtime.globalState.updatedAt = nowIso();
+				localStorage.setItem(
+					getGlobalStorageKey(runtime.category.id),
+					JSON.stringify(runtime.globalState),
+				);
+			}
+
+			function loadUserState(email) {
+				const key = USER_PREFIX + normalizeEmail(email);
+				try {
+					const raw = localStorage.getItem(key);
+					if (!raw) {
+						return {
+							freeVotesUsed: 0,
+							hasPaid: false,
+							totalVotes: 0,
+							voteLog: [],
+						};
+					}
+					const parsed = JSON.parse(raw);
+					return {
+						freeVotesUsed: Number(parsed?.freeVotesUsed ?? 0),
+						hasPaid: Boolean(parsed?.hasPaid ?? false),
+						totalVotes: Number(parsed?.totalVotes ?? 0),
+						voteLog: Array.isArray(parsed?.voteLog)
+							? parsed.voteLog.slice(-30)
+							: [],
+					};
+				} catch {
+					return {
+						freeVotesUsed: 0,
+						hasPaid: false,
+						totalVotes: 0,
+						voteLog: [],
+					};
+				}
+			}
+
+			function saveUserState(email, state) {
+				const norm = normalizeEmail(email);
+				if (!norm) return;
+				localStorage.setItem(USER_PREFIX + norm, JSON.stringify(state));
+				const idx = loadUsersIndex();
+				if (!idx.includes(norm)) saveUsersIndex(idx.concat([norm]));
+				renderLoginMeta();
+				renderStatus();
+			}
+
+			function cloneData(data) {
+				if (typeof structuredClone === "function") return structuredClone(data);
+				return JSON.parse(JSON.stringify(data));
+			}
+
+			function addMinutes(date, minutes) {
+				return new Date(date.getTime() + minutes * 60000);
+			}
+
+			function formatDateTime(date) {
+				return new Intl.DateTimeFormat("id-ID", {
+					day: "2-digit",
+					month: "short",
+					hour: "2-digit",
+					minute: "2-digit",
+				}).format(date);
+			}
+
+			function formatCountdown(ms) {
+				const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+				const minutes = Math.floor(totalSeconds / 60);
+				const seconds = totalSeconds % 60;
+				return `${minutes}:${String(seconds).padStart(2, "0")}`;
+			}
+
+			function teamKey(team) {
+				return String(team?.id || team?.name || "").trim().toLowerCase();
+			}
+
+			function getAvatarUrl(team) {
+				if (!team) return "";
+				if (team.image) return team.image;
+				return "./piranti.jpeg";
+			}
+
+			function isKnownTeam(team) {
+				if (!team) return false;
+				const id = teamKey(team);
+				return runtime.category.teams.some((item) => teamKey(item) === id);
+			}
+
+			function hasResolvedTeams(game) {
+				return Boolean(
+					game &&
+					game.length === 2 &&
+					isKnownTeam(game[0]) &&
+					isKnownTeam(game[1]),
+				);
+			}
+
+			function getMatchId(roundIndex, gameIndex, game) {
+				const aKey = teamKey(game?.[0]);
+				const bKey = teamKey(game?.[1]);
+				return `${runtime.category.id}:${roundIndex}:${gameIndex}:${aKey}|${bKey}`;
+			}
+
+			function getTotalFor(matchId, tKey) {
+				const value = runtime.globalState?.totals?.[matchId]?.[tKey];
+				return Number.isFinite(Number(value)) ? Number(value) : 0;
+			}
+
+			function getCurrentRoundIndex(data) {
+				for (let r = 0; r < data.length; r++) {
+					const round = data[r] || [];
+					const hasPlayableMatch = round.some((game) => {
+						if (!game || game.length !== 2) return false;
+						const a = game[0]?.score;
+						const b = game[1]?.score;
+						return a == null || b == null;
+					});
+					if (hasPlayableMatch) return r;
+				}
+				return -1;
+			}
+
+			function buildScheduleMap(baseData) {
+				const now = new Date();
+				const baseStart = addMinutes(now, -45);
+				const roundGap = 80;
+				const matchGap = 28;
+				const duration = 25;
+				const scheduleMap = {};
+				let liveAssigned = false;
+
+				baseData.forEach((round, roundIndex) => {
+					(round || []).forEach((game, gameIndex) => {
+						if (!game || game.length !== 2) return;
+						let start = addMinutes(
+							baseStart,
+							roundIndex * roundGap + gameIndex * matchGap,
+						);
+
+						if (!liveAssigned && roundIndex === 0 && gameIndex === 1) {
+							start = addMinutes(now, -8);
+							liveAssigned = true;
+						}
+
+						const end = addMinutes(start, duration);
+						scheduleMap[`${roundIndex}:${gameIndex}`] = { start, end };
+					});
+				});
+
+				return scheduleMap;
+			}
+
+			function getSchedule(roundIndex, gameIndex) {
+				return runtime.scheduleMap?.[`${roundIndex}:${gameIndex}`] || null;
+			}
+
+			function getMatchStatus(roundIndex, gameIndex) {
+				const schedule = getSchedule(roundIndex, gameIndex);
+				if (!schedule) {
+					return {
+						key: "upcoming",
+						label: "Menunggu",
+						canVote: false,
+						countdownLabel: "Jadwal belum tersedia",
+						progress: 0,
+					};
+				}
+
+				const now = Date.now();
+				const startMs = schedule.start.getTime();
+				const endMs = schedule.end.getTime();
+
+				if (now < startMs) {
+					return {
+						key: "upcoming",
+						label: "Akan Datang",
+						canVote: false,
+						countdownLabel: `Mulai ${formatDateTime(schedule.start)}`,
+						progress: 0,
+					};
+				}
+
+				if (now >= startMs && now < endMs) {
+					const total = endMs - startMs;
+					const remaining = endMs - now;
+					return {
+						key: "live",
+						label: "Sedang Berlangsung",
+						canVote: true,
+						countdownLabel: `Sisa waktu ${formatCountdown(remaining)}`,
+						progress: ((now - startMs) / total) * 100,
+					};
+				}
+
+				return {
+					key: "closed",
+					label: "Selesai",
+					canVote: false,
+					countdownLabel: `Berakhir ${formatDateTime(schedule.end)}`,
+					progress: 100,
+				};
+			}
+
+			function syncMatchScoresFromGlobal(roundIndex, gameIndex) {
+				if (!bracket) return;
+				const data = bracket.getData();
+				const game = data?.[roundIndex]?.[gameIndex];
+				if (!game || game.length !== 2) return;
+
+				const matchId = getMatchId(roundIndex, gameIndex, game);
+				const aVotes = getTotalFor(matchId, teamKey(game[0]));
+				const bVotes = getTotalFor(matchId, teamKey(game[1]));
+
+				isHydrating = true;
+				if (aVotes > 0) bracket.updateScore(roundIndex, gameIndex, 0, aVotes);
+				if (bVotes > 0) bracket.updateScore(roundIndex, gameIndex, 1, bVotes);
+				isHydrating = false;
+			}
+
+			function hydrateScoresFromGlobal() {
+				if (!bracket) return;
+				const data = bracket.getData() || [];
+				isHydrating = true;
+				for (let r = 0; r < data.length; r++) {
+					const round = data[r] || [];
+					for (let g = 0; g < round.length; g++) {
+						const game = round[g];
+						if (!game || game.length !== 2) continue;
+						const matchId = getMatchId(r, g, game);
+						const aVotes = getTotalFor(matchId, teamKey(game[0]));
+						const bVotes = getTotalFor(matchId, teamKey(game[1]));
+						if (aVotes > 0) bracket.updateScore(r, g, 0, aVotes);
+						if (bVotes > 0) bracket.updateScore(r, g, 1, bVotes);
+					}
+				}
+				isHydrating = false;
+			}
+
+			function setCurrentEmail(email) {
+				const norm = normalizeEmail(email);
+				currentEmail = norm;
+				if (norm) {
+					saveSessionEmail(norm);
+					userState = loadUserState(norm);
+				} else {
+					localStorage.removeItem(STORAGE_SESSION_KEY);
+					userState = null;
+				}
+				emailInput.value = norm || "";
+				renderLoginMeta();
+				renderStatus();
+			}
+
+			function createBracket(data) {
+				if (bracket) bracket.destroy();
+				bracket = new Gracket("#bracket", {
+					src: data,
+					byeLabel: "BYE",
+					roundLabels,
+					cornerRadius: 8,
+					canvasLineColor: "rgba(200, 210, 230, 0.55)",
+					canvasLineWidth: 2,
+					onScoreUpdate: () => {
+						if (isHydrating) return;
+						renderVotePanel();
+					},
+				});
+				setTimeout(decorateBracketTeams, 0);
+			}
+
+			function decorateBracketTeams() {
+				const container = document.getElementById("bracket");
+				if (!container) return;
+				container.querySelectorAll(".g_team-name").forEach((element) => {
+					const rawName =
+						element.getAttribute("data-team-name") ||
+						String(element.textContent || "").trim();
+					const team = runtime.category.teams.find((item) => item.name === rawName);
+					if (!team) return;
+					element.setAttribute("data-team-name", team.name);
+					element.innerHTML = `
+						<span class="bracket-team-decor">
+							<img class="bracket-avatar" src="${getAvatarUrl(team)}" alt="${team.name}" />
+							<span>${team.name}</span>
+						</span>
+					`;
+				});
+			}
+
+			function openModal() {
+				if (modalCountdownInterval) {
+					clearInterval(modalCountdownInterval);
+					modalCountdownInterval = null;
+				}
+				modalBackdrop.hidden = false;
+				document.body.style.overflow = "hidden";
+			}
+
+			function closeModal() {
+				if (modalCountdownInterval) {
+					clearInterval(modalCountdownInterval);
+					modalCountdownInterval = null;
+				}
+				modalBackdrop.hidden = true;
+				document.body.style.overflow = "";
+				pendingVote = null;
+				afterLoginAction = null;
+			}
+
+			function renderCategoryBadges() {
+				categoryStrip.innerHTML = "";
+				CATEGORY_DEFS.forEach((category) => {
+					const button = document.createElement("button");
+					button.type = "button";
+					button.className = `category-badge ${category.id === runtime.category.id ? "active" : ""}`;
+					button.textContent = category.label;
+					button.addEventListener("click", () => switchCategory(category.id));
+					categoryStrip.appendChild(button);
+				});
+			}
+
+			function renderCategorySummary() {
+				const currentRound = getCurrentRoundIndex(bracket.getData() || []);
+				const label =
+					currentRound === -1
+						? "Selesai"
+						: roundLabels[currentRound] || `Round ${currentRound + 1}`;
+				const liveMatch = findLiveMatch();
+				const nextCount = getScheduleItems().filter(
+					(item) => item.status.key === "upcoming",
+				).length;
+
+				categorySummary.innerHTML = `
+					<strong>${runtime.category.label}</strong>
+					<div class="note" style="margin-bottom:8px">${runtime.category.subtitle}</div>
+					<div class="summary-row">
+						<span class="summary-pill">Round aktif: ${label}</span>
+						<span class="summary-pill">${
+							liveMatch
+								? `Live: ${liveMatch.game[0].name} vs ${liveMatch.game[1].name}`
+								: "Belum ada match live"
+						}</span>
+						<span class="summary-pill">Akan datang: ${nextCount}</span>
+					</div>
+				`;
+			}
+
+			function renderLoginMeta() {
+				if (!currentEmail) {
+					loginMetaEl.textContent =
+						"Belum login. Vote gratis dan pembayaran dicek per email.";
+					return;
+				}
+				loginMetaEl.textContent = `Login: ${currentEmail}.`;
+			}
+
+			function renderStatus() {
+				if (!currentEmail || !userState) {
+					statusEl.textContent = "Login dulu untuk vote di match yang live.";
+					return;
+				}
+
+				const freeLeft = Math.max(0, FREE_VOTES - (userState.freeVotesUsed || 0));
+				const recentVotes = (userState.voteLog || [])
+					.slice(-4)
+					.reverse()
+					.map((item) => `- ${item.picked} (${item.match})`)
+					.join("<br>");
+
+				statusEl.innerHTML = `
+					Vote gratis tersisa: <span class="mono">${freeLeft}</span>.
+					Total vote kamu: <span class="mono">${userState.totalVotes || 0}</span>.
+					Setelah jatah gratis habis, vote berikutnya akan minta pembayaran dummy.
+					${recentVotes ? `<div class="note" style="margin-top:8px">Vote terakhir:<br>${recentVotes}</div>` : ""}
+				`;
+			}
+
+			function findMatchByTeamName(round, teamName) {
+				if (!teamName) return null;
+				for (let gameIndex = 0; gameIndex < round.length; gameIndex++) {
+					const game = round[gameIndex];
+					if (!game || game.length !== 2) continue;
+					const idx = game.findIndex(
+						(team) =>
+							(team?.name || "").toUpperCase() === teamName.toUpperCase(),
+					);
+					if (idx !== -1) return { gameIndex, teamIndex: idx };
+				}
+				return null;
+			}
+
+			function extractTeamNameFromClick(target) {
+				const allNames = runtime.category.teams.map((team) => team.name);
+				let el = target;
+				for (let hop = 0; hop < 6 && el; hop++) {
+					const text = (el.textContent || "").toUpperCase();
+					for (const name of allNames) {
+						if (text.includes(name.toUpperCase())) return name;
+					}
+					el = el.parentElement;
+				}
+				return null;
+			}
+
+			function extractBracketLabelFromClick(target) {
+				let el = target;
+				for (let hop = 0; hop < 6 && el; hop++) {
+					const text = String(el.textContent || "").trim();
+					if (text) return text.toUpperCase();
+					el = el.parentElement;
+				}
+				return "";
+			}
+
+			function findLiveMatch() {
+				const data = bracket?.getData() || [];
+				for (let roundIndex = 0; roundIndex < data.length; roundIndex++) {
+					const round = data[roundIndex] || [];
+					for (let gameIndex = 0; gameIndex < round.length; gameIndex++) {
+						const game = round[gameIndex];
+						if (!hasResolvedTeams(game)) continue;
+						const status = getMatchStatus(roundIndex, gameIndex);
+						if (status.key === "live") {
+							return { roundIndex, gameIndex, game, status };
+						}
+					}
+				}
+				return null;
+			}
+
+			function getScheduleItems() {
+				const data = bracket?.getData() || [];
+				const items = [];
+				for (let roundIndex = 0; roundIndex < data.length; roundIndex++) {
+					const round = data[roundIndex] || [];
+					for (let gameIndex = 0; gameIndex < round.length; gameIndex++) {
+						const game = round[gameIndex];
+						if (!hasResolvedTeams(game)) continue;
+						const status = getMatchStatus(roundIndex, gameIndex);
+						if (status.key === "closed") continue;
+						items.push({
+							roundIndex,
+							gameIndex,
+							game,
+							status,
+							schedule: getSchedule(roundIndex, gameIndex),
+						});
+					}
+				}
+
+				return items.sort(
+					(a, b) => a.schedule.start.getTime() - b.schedule.start.getTime(),
+				);
+			}
+
+			function renderScheduleStrip() {
+				const items = getScheduleItems();
+				if (!items.length) {
+					scheduleStrip.innerHTML =
+						'<div class="schedule-card"><div class="schedule-time">Belum ada pertandingan live atau upcoming.</div></div>';
+					return;
+				}
+
+				scheduleStrip.innerHTML = "";
+				items.forEach((item) => {
+					const card = document.createElement("div");
+					card.className = `schedule-card ${item.status.key === "live" ? "live" : ""}`;
+					card.dataset.round = item.roundIndex;
+					card.dataset.game = item.gameIndex;
+					card.innerHTML = `
+						<div class="schedule-top">
+							<div class="schedule-title">${roundLabels[item.roundIndex] || `Round ${item.roundIndex + 1}`}</div>
+							<div class="match-state ${item.status.key}">${item.status.key === "live" ? "Live" : "Soon"}</div>
+						</div>
+						<div class="schedule-match">${item.game[0].name} vs ${item.game[1].name}</div>
+						<div class="schedule-time">${formatDateTime(item.schedule.start)}</div>
+						<div class="schedule-time">${item.status.countdownLabel}</div>
+					`;
+					scheduleStrip.appendChild(card);
+				});
+			}
+
+			function canVoteMatch(roundIndex, gameIndex) {
+				const game = bracket.getData()?.[roundIndex]?.[gameIndex];
+				if (!hasResolvedTeams(game)) {
+					return {
+						ok: false,
+						message: "Match ini belum punya dua tim pasti.",
+					};
+				}
+				const status = getMatchStatus(roundIndex, gameIndex);
+				if (status.key === "closed") {
+					return {
+						ok: false,
+						message: "Voting untuk match ini sudah ditutup.",
+					};
+				}
+
+				return { ok: true, status };
+			}
+
+			function castVote(roundIndex, gameIndex, teamIndex, voteAmount = 1) {
+				if (!currentEmail || !userState) {
+					renderLoginModal(() =>
+						castVote(roundIndex, gameIndex, teamIndex, voteAmount),
+					);
+					return;
+				}
+
+				const permission = canVoteMatch(roundIndex, gameIndex);
+				if (!permission.ok) {
+					statusEl.textContent = permission.message;
+					return;
+				}
+
+				const game = bracket.getData()?.[roundIndex]?.[gameIndex];
+				if (!game || game.length !== 2) return;
+				const amount = Math.max(1, Math.floor(Number(voteAmount) || 0));
+
+				const matchId = getMatchId(roundIndex, gameIndex, game);
+				const pickedTeam = game[teamIndex];
+				const pickedKey = teamKey(pickedTeam);
+
+				runtime.globalState.totals[matchId] = runtime.globalState.totals[matchId] || {};
+				runtime.globalState.totals[matchId][pickedKey] =
+					Number(runtime.globalState.totals[matchId][pickedKey] || 0) + amount;
+				saveGlobalState();
+
+				syncMatchScoresFromGlobal(roundIndex, gameIndex);
+
+				userState.totalVotes = Number(userState.totalVotes || 0) + amount;
+				const usedBefore = Number(userState.freeVotesUsed || 0);
+				const freeRemaining = Math.max(0, FREE_VOTES - usedBefore);
+				const freeConsumed = Math.min(freeRemaining, amount);
+				userState.freeVotesUsed = usedBefore + freeConsumed;
+
+				userState.voteLog.push({
+					at: nowIso(),
+					match: `${game[0].name} vs ${game[1].name}`,
+					picked: `${pickedTeam?.name ?? "Team"} x${amount}`,
+				});
+				userState.voteLog = userState.voteLog.slice(-30);
+				saveUserState(currentEmail, userState);
+
+				if (bracket.isRoundComplete(roundIndex)) {
+					bracket.advanceRound(roundIndex, {
+						tieBreaker: "higher-seed",
+						createRounds: true,
+					});
+				}
+
+				renderScheduleStrip();
+				renderVotePanel();
+				renderCategorySummary();
+			}
+
+			function renderLoginModal(afterLogin) {
+				afterLoginAction = typeof afterLogin === "function" ? afterLogin : null;
+				modalTitle.textContent = "Login";
+				modalBody.innerHTML = `
+					<p class="modal-sub">Login dummy pakai email. Vote gratis dan pembayaran dicek per email.</p>
+					<div class="vs-card">
+						<div class="vs-team">Email</div>
+						<input id="modal-email" class="modal-input mono" type="email" placeholder="email..." />
+					</div>
+					<div class="modal-actions">
+						<button id="modal-login" class="primary-btn" type="button">Login</button>
+						<button id="modal-login-cancel" class="primary-btn danger-btn" type="button">Batal</button>
+					</div>
+				`;
+				openModal();
+
+				const input = document.getElementById("modal-email");
+				input.value = currentEmail || "";
+				setTimeout(() => input.focus(), 0);
+
+				const doLogin = () => {
+					const value = normalizeEmail(input.value);
+					if (!value || !value.includes("@")) {
+						input.focus();
+						return;
+					}
+					setCurrentEmail(value);
+					closeModal();
+					if (afterLoginAction) afterLoginAction();
+				};
+
+				document.getElementById("modal-login").addEventListener("click", doLogin);
+				document
+					.getElementById("modal-login-cancel")
+					.addEventListener("click", closeModal);
+				input.addEventListener("keydown", (event) => {
+					if (event.key === "Enter") doLogin();
+				});
+			}
+
+			function renderPaymentModal() {
+				modalTitle.textContent = "Pembayaran";
+				const freeLeft = Math.max(0, FREE_VOTES - (userState?.freeVotesUsed || 0));
+				modalBody.innerHTML = `
+					<p class="modal-sub">Vote gratis kamu sudah habis. Lanjutkan dummy payment untuk vote berikutnya.</p>
+					<div class="pay-grid">
+						<button class="pay-card" data-pay="qris" type="button">
+							<strong>QRIS</strong>
+							<span>Dummy QRIS statis</span>
+						</button>
+						<button class="pay-card" data-pay="paypal" type="button">
+							<strong>PayPal</strong>
+							<span>Dummy checkout</span>
+						</button>
+					</div>
+					<p class="note">Vote gratis tersisa: <span class="mono">${freeLeft}</span>.</p>
+				`;
+				openModal();
+
+				modalBody.querySelectorAll("[data-pay]").forEach((button) => {
+					button.addEventListener("click", () => {
+						renderPaymentDetail(button.getAttribute("data-pay"));
+					});
+				});
+			}
+
+			function renderPaymentDetail(method) {
+				const isQris = method === "qris";
+				modalTitle.textContent = isQris ? "Bayar via QRIS" : "Bayar via PayPal";
+				modalBody.innerHTML = `
+					<p class="modal-sub">${isQris ? "Scan QRIS dummy ini." : "Klik tombol PayPal dummy ini."}</p>
+					<div class="vs-card">
+						<div class="vs-team">${isQris ? "QRIS DUMMY" : "PAYPAL DUMMY"}</div>
+						<div class="vs-meta">
+							<span>Amount <span class="mono">Rp 2.000</span></span>
+							<span class="vs-pill">${isQris ? "QRIS" : "PayPal"}</span>
+						</div>
+						<div class="note">${isQris ? "Kode QR" : "Order ID"}: <span class="mono">${isQris ? "000201010212" : "PAYPAL-ORDER-12345"}</span></div>
+					</div>
+					<div class="modal-actions">
+						<button id="pay-success" class="primary-btn" type="button">Simulasikan Sukses</button>
+						<button id="pay-cancel" class="primary-btn danger-btn" type="button">Batal</button>
+					</div>
+				`;
+				openModal();
+
+				document.getElementById("pay-success").addEventListener("click", () => {
+					const queuedVote = pendingVote;
+					closeModal();
+					if (queuedVote) {
+						castVote(
+							queuedVote.roundIndex,
+							queuedVote.gameIndex,
+							queuedVote.teamIndex,
+							queuedVote.voteAmount,
+						);
+					}
+				});
+
+				document.getElementById("pay-cancel").addEventListener("click", () => {
+					pendingVote = null;
+					closeModal();
+				});
+			}
+
+			function renderVoteModal({ roundIndex, gameIndex, preselectTeamIndex = null }) {
+				if (!currentEmail || !userState) {
+					renderLoginModal(() =>
+						renderVoteModal({ roundIndex, gameIndex, preselectTeamIndex }),
+					);
+					return;
+				}
+
+				const permission = canVoteMatch(roundIndex, gameIndex);
+				if (!permission.ok) {
+					statusEl.textContent = permission.message;
+					return;
+				}
+
+				const game = bracket.getData()?.[roundIndex]?.[gameIndex];
+				if (!game || game.length !== 2) return;
+
+				syncMatchScoresFromGlobal(roundIndex, gameIndex);
+				const refreshed = bracket.getData()?.[roundIndex]?.[gameIndex];
+				const aScore = refreshed?.[0]?.score ?? "-";
+				const bScore = refreshed?.[1]?.score ?? "-";
+				const freeLeft = Math.max(0, FREE_VOTES - (userState.freeVotesUsed || 0));
+				const premiumText = `Gratis tersisa: ${freeLeft}`;
+				const schedule = getSchedule(roundIndex, gameIndex);
+				const renderVoteResultState = () => {
+					syncMatchScoresFromGlobal(roundIndex, gameIndex);
+					const latestGame = bracket.getData()?.[roundIndex]?.[gameIndex];
+					const totalA = latestGame?.[0]?.score ?? 0;
+					const totalB = latestGame?.[1]?.score ?? 0;
+					const actionWrap = document.getElementById("modal-vote-actions");
+					const premiumNote = document.getElementById("modal-premium-note");
+					const subText = modalBody.querySelector(".modal-sub");
+					const countdownNode = document.getElementById("modal-countdown");
+					if (subText) {
+						subText.textContent =
+							"Waktu voting selesai. Berikut total vote terakhir untuk match ini.";
+					}
+					if (countdownNode) {
+						countdownNode.textContent = `Total vote akhir: ${totalA + totalB}`;
+					}
+					if (actionWrap) {
+						actionWrap.innerHTML = `
+							<div class="note">
+								${game[0].name}: <span class="mono">${totalA}</span><br>
+								${game[1].name}: <span class="mono">${totalB}</span>
+							</div>
+						`;
+					}
+					if (premiumNote) {
+						premiumNote.textContent = "Voting untuk match ini sudah ditutup.";
+					}
+				};
+
+				const modalIntroText =
+					permission.status.key === "upcoming"
+						? "Voting sudah dibuka. Match ini akan segera dimulai."
+						: "Voting sedang dibuka untuk pertandingan ini.";
+
+				modalTitle.textContent = "Vote Match";
+				modalBody.innerHTML = `
+					<p class="modal-sub">${modalIntroText}</p>
+					<div class="vs">
+						<div class="vs-card">
+							<div class="vs-head">
+								<img class="modal-avatar" src="${getAvatarUrl(game[0])}" alt="${game[0].name}" />
+								<div class="vs-team">${game[0].name}</div>
+							</div>
+							<div class="vs-meta"><span>Skor</span><span>${aScore}</span></div>
+						</div>
+						<div class="vs-pill">VS</div>
+						<div class="vs-card">
+							<div class="vs-head">
+								<img class="modal-avatar" src="${getAvatarUrl(game[1])}" alt="${game[1].name}" />
+								<div class="vs-team">${game[1].name}</div>
+							</div>
+							<div class="vs-meta"><span>Skor</span><span>${bScore}</span></div>
+						</div>
+					</div>
+					<div class="note">Jadwal: ${formatDateTime(schedule.start)} - ${formatDateTime(schedule.end)}</div>
+					<div id="modal-countdown" class="note" style="margin-top:4px">${permission.status.countdownLabel}</div>
+					<div id="modal-vote-actions" class="modal-actions">
+						<div class="vs-card">
+							<div class="vs-head">
+								<img class="modal-avatar" src="${getAvatarUrl(game[0])}" alt="${game[0].name}" />
+								<div class="vs-team">${game[0].name}</div>
+							</div>
+							<input
+								id="vote-amount-0"
+								class="modal-input mono"
+								type="number"
+								inputmode="numeric"
+								min="1"
+								step="1"
+								value="${preselectTeamIndex === 0 ? 1 : 1}"
+								placeholder="jumlah vote"
+							/>
+							<div class="note" style="margin-top:8px">Hanya angka positif.</div>
+							<button class="primary-btn" data-vote-team="0" type="button" style="margin-top:10px">Vote ${game[0].name}</button>
+						</div>
+						<div class="vs-card">
+							<div class="vs-head">
+								<img class="modal-avatar" src="${getAvatarUrl(game[1])}" alt="${game[1].name}" />
+								<div class="vs-team">${game[1].name}</div>
+							</div>
+							<input
+								id="vote-amount-1"
+								class="modal-input mono"
+								type="number"
+								inputmode="numeric"
+								min="1"
+								step="1"
+								value="${preselectTeamIndex === 1 ? 1 : 1}"
+								placeholder="jumlah vote"
+							/>
+							<div class="note" style="margin-top:8px">Hanya angka positif.</div>
+							<button class="primary-btn danger-btn" data-vote-team="1" type="button" style="margin-top:10px">Vote ${game[1].name}</button>
+						</div>
+					</div>
+					<p id="modal-premium-note" class="note">${premiumText} Vote ke-2 dan seterusnya butuh bayar dummy kalau belum premium.</p>
+				`;
+				openModal();
+
+				const countdownEl = document.getElementById("modal-countdown");
+				const updateModalCountdown = () => {
+					const latestStatus = getMatchStatus(roundIndex, gameIndex);
+					if (!countdownEl) return;
+					if (latestStatus.key === "closed") {
+						renderVoteResultState();
+						if (modalCountdownInterval) {
+							clearInterval(modalCountdownInterval);
+							modalCountdownInterval = null;
+						}
+						return;
+					}
+					countdownEl.textContent = latestStatus.countdownLabel;
+				};
+
+				updateModalCountdown();
+				modalCountdownInterval = setInterval(updateModalCountdown, 1000);
+
+				const sanitizeVoteInput = (input) => {
+					if (!input) return;
+					const clean = String(input.value || "").replace(/[^\d]/g, "");
+					if (!clean) {
+						input.value = "";
+						return;
+					}
+					const normalized = String(Math.max(1, Number(clean)));
+					input.value = normalized;
+				};
+
+				[0, 1].forEach((teamIndex) => {
+					const input = document.getElementById(`vote-amount-${teamIndex}`);
+					if (!input) return;
+					input.addEventListener("input", () => sanitizeVoteInput(input));
+					input.addEventListener("keydown", (event) => {
+						if (["e", "E", "+", "-", "."].includes(event.key)) {
+							event.preventDefault();
+						}
+					});
+					input.addEventListener("blur", () => {
+						if (!input.value) input.value = "1";
+						sanitizeVoteInput(input);
+					});
+				});
+
+				modalBody.querySelectorAll("[data-vote-team]").forEach((button) => {
+					button.addEventListener("click", () => {
+						const teamIndex = Number(button.getAttribute("data-vote-team"));
+						const input = document.getElementById(`vote-amount-${teamIndex}`);
+						sanitizeVoteInput(input);
+						const voteAmount = Math.max(
+							1,
+							Math.floor(Number(input?.value || 0) || 0),
+						);
+						const freeLeftNow = Math.max(
+							0,
+							FREE_VOTES - (userState.freeVotesUsed || 0),
+						);
+						const needsPay = voteAmount > freeLeftNow;
+						if (needsPay) {
+							pendingVote = { roundIndex, gameIndex, teamIndex, voteAmount };
+							renderPaymentModal();
+							return;
+						}
+						closeModal();
+						castVote(roundIndex, gameIndex, teamIndex, voteAmount);
+					});
+				});
+			}
+
+			function renderVotePanel() {
+				renderStatus();
+				setTimeout(decorateBracketTeams, 0);
+			}
+
+			function switchCategory(categoryId) {
+				const selected = CATEGORY_DEFS.find((item) => item.id === categoryId);
+				if (!selected) return;
+
+				currentCategoryId = selected.id;
+				localStorage.setItem(STORAGE_CATEGORY_KEY, currentCategoryId);
+
+				const baseData = generateTournamentWithByes(selected.teams, "top-seeds");
+				runtime = {
+					category: selected,
+					baseData,
+					scheduleMap: buildScheduleMap(baseData),
+					globalState: loadGlobalState(selected.id),
+				};
+
+				createBracket(cloneData(baseData));
+				hydrateScoresFromGlobal();
+				renderCategoryBadges();
+				renderScheduleStrip();
+				renderCategorySummary();
+				renderVotePanel();
+			}
+
+			function doLoginFromPanel() {
+				const value = normalizeEmail(emailInput.value);
+				if (!value || !value.includes("@")) return;
+				setCurrentEmail(value);
+				renderVotePanel();
+			}
+
+			scheduleStrip.addEventListener("click", (event) => {
+				const card = event.target.closest(".schedule-card");
+				if (!card) return;
+				const roundIndex = Number(card.dataset.round);
+				const gameIndex = Number(card.dataset.game);
+				if (!Number.isFinite(roundIndex) || !Number.isFinite(gameIndex)) return;
+				const game = bracket?.getData()?.[roundIndex]?.[gameIndex];
+				if (!game || !hasResolvedTeams(game)) return;
+				renderVoteModal({
+					roundIndex,
+					gameIndex,
+					preselectTeamIndex: null,
+				});
+			});
+
+			document.getElementById("bracket").addEventListener("click", (event) => {
+				if (!bracket) return;
+				const teamCard = event.target.closest(".g_team");
+				if (!teamCard) return;
+				const nameEl = teamCard.querySelector(".g_team-name");
+				const teamName = String(
+					nameEl?.getAttribute("data-team-name") ||
+						nameEl?.textContent ||
+						"",
+				).trim();
+				if (!teamName) {
+					const label = extractBracketLabelFromClick(event.target);
+					if (/WINNER|CHAMPION|BYE/.test(label)) {
+						statusEl.textContent =
+							"Bagian bracket itu belum bisa diklik karena timnya belum masuk.";
+					}
+					return;
+				}
+				const data = bracket.getData();
+				const roundIndex = getCurrentRoundIndex(data);
+				if (roundIndex === -1) return;
+				const round = data[roundIndex] || [];
+				const match = findMatchByTeamName(round, teamName);
+				if (!match) return;
+				const permission = canVoteMatch(roundIndex, match.gameIndex);
+				if (!permission.ok) {
+					statusEl.textContent = permission.message;
+					return;
+				}
+				renderVoteModal({
+					roundIndex,
+					gameIndex: match.gameIndex,
+					preselectTeamIndex: match.teamIndex,
+				});
+			});
+
+			document.getElementById("reset-bracket").addEventListener("click", () => {
+				const userIndex = loadUsersIndex();
+				userIndex.forEach((email) => localStorage.removeItem(USER_PREFIX + email));
+				localStorage.removeItem(STORAGE_USERS_INDEX);
+				CATEGORY_DEFS.forEach((category) => {
+					localStorage.removeItem(getGlobalStorageKey(category.id));
+				});
+				setCurrentEmail("");
+				switchCategory(runtime.category.id);
+			});
+
+			document.getElementById("modal-close").addEventListener("click", closeModal);
+			modalBackdrop.addEventListener("click", (event) => {
+				if (event.target === modalBackdrop) closeModal();
+			});
+			document.addEventListener("keydown", (event) => {
+				if (!modalBackdrop.hidden && event.key === "Escape") closeModal();
+			});
+
+			loginBtn.addEventListener("click", doLoginFromPanel);
+			logoutBtn.addEventListener("click", () => {
+				setCurrentEmail("");
+			});
+			emailInput.addEventListener("keydown", (event) => {
+				if (event.key === "Enter") doLoginFromPanel();
+			});
+
+			emailInput.value = currentEmail || "";
+			switchCategory(currentCategoryId);
+			renderLoginMeta();
+			renderStatus();
+			setInterval(() => {
+				if (!bracket) return;
+				renderScheduleStrip();
+				renderCategorySummary();
+				renderVotePanel();
+			}, 1000);
+		</script>
+	</body>
+</html>
