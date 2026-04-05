@@ -19,14 +19,54 @@
         "roundGapMinutes": 80
       },
       "teams": [
-        { "name": "Luffy", "id": "luffy", "seed": 1 },
-        { "name": "Zoro", "id": "zoro", "seed": 2 },
-        { "name": "Sanji", "id": "sanji", "seed": 3 },
-        { "name": "Law", "id": "law", "seed": 4 },
-        { "name": "Shanks", "id": "shanks", "seed": 5 },
-        { "name": "Ace", "id": "ace", "seed": 6 },
-        { "name": "Sabo", "id": "sabo", "seed": 7 },
-        { "name": "Mihawk", "id": "mihawk", "seed": 8 }
+        {
+          "name": "Luffy",
+          "id": "luffy",
+          "seed": 1,
+          "image": "https://static.wikia.nocookie.net/onepiece/images/6/6d/Monkey_D._Luffy_Anime_Post_Timeskip_Infobox.png/revision/latest?cb=20240306200817"
+        },
+        {
+          "name": "Zoro",
+          "id": "zoro",
+          "seed": 2,
+          "image": "https://static.wikia.nocookie.net/onepiece/images/5/52/Roronoa_Zoro_Anime_Post_Timeskip_Infobox.png/revision/latest?cb=20241029161719"
+        },
+        {
+          "name": "Sanji",
+          "id": "sanji",
+          "seed": 3,
+          "image": "https://static.wikia.nocookie.net/onepiece/images/b/b6/Sanji_Anime_Post_Timeskip_Infobox.png/revision/latest?cb=20240122012744"
+        },
+        {
+          "name": "Law",
+          "id": "law",
+          "seed": 4,
+          "image": "https://static.wikia.nocookie.net/onepiece/images/4/4d/Trafalgar_D._Water_Law_Anime_Post_Timeskip_Infobox.png/revision/latest?cb=20230124163510"
+        },
+        {
+          "name": "Shanks",
+          "id": "shanks",
+          "seed": 5,
+          "image": "https://static.wikia.nocookie.net/onepiece/images/6/66/Shanks_Anime_Infobox.png/revision/latest?cb=20240829145447"
+        },
+        {
+          "name": "Ace",
+          "id": "ace",
+          "seed": 6,
+          "image": "https://static.wikia.nocookie.net/onepiece/images/4/4f/Portgas_D._Ace_Anime_Infobox.png/revision/latest?cb=20240629132600"
+        },
+        {
+          "name": "Sabo",
+          "id": "sabo",
+          "seed": 7,
+          "image": "https://static.wikia.nocookie.net/onepiece/images/c/c2/Sabo_Anime_Infobox.png/revision/latest?cb=20230804035141"
+        },
+        {
+          "name": "Mihawk",
+          "id": "mihawk",
+          "seed": 8,
+          "image": "https://static.wikia.nocookie.net/onepiece/images/b/bf/Dracule_Mihawk_Anime_Infobox.png/revision/latest?cb=20151222105910"
+        }
       ]
     },
     {
@@ -42,14 +82,54 @@
         "roundGapMinutes": 80
       },
       "teams": [
-        { "name": "Real Madrid", "id": "real-madrid", "seed": 1 },
-        { "name": "Barcelona", "id": "barcelona", "seed": 2 },
-        { "name": "Liverpool", "id": "liverpool", "seed": 3 },
-        { "name": "Arsenal", "id": "arsenal", "seed": 4 },
-        { "name": "Bayern", "id": "bayern", "seed": 5 },
-        { "name": "PSG", "id": "psg", "seed": 6 },
-        { "name": "Inter", "id": "inter", "seed": 7 },
-        { "name": "Milan", "id": "milan", "seed": 8 }
+        {
+          "name": "Real Madrid",
+          "id": "real-madrid",
+          "seed": 1,
+          "image": "https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/330px-Real_Madrid_CF.svg.png"
+        },
+        {
+          "name": "Barcelona",
+          "id": "barcelona",
+          "seed": 2,
+          "image": "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/330px-FC_Barcelona_%28crest%29.svg.png"
+        },
+        {
+          "name": "Liverpool",
+          "id": "liverpool",
+          "seed": 3,
+          "image": "https://upload.wikimedia.org/wikipedia/en/thumb/0/0c/Liverpool_FC.svg/330px-Liverpool_FC.svg.png"
+        },
+        {
+          "name": "Arsenal",
+          "id": "arsenal",
+          "seed": 4,
+          "image": "https://upload.wikimedia.org/wikipedia/en/thumb/5/53/Arsenal_FC.svg/330px-Arsenal_FC.svg.png"
+        },
+        {
+          "name": "Bayern",
+          "id": "bayern",
+          "seed": 5,
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg/330px-FC_Bayern_M%C3%BCnchen_logo_%282024%29.svg.png"
+        },
+        {
+          "name": "PSG",
+          "id": "psg",
+          "seed": 6,
+          "image": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a7/Paris_Saint-Germain_F.C..svg/330px-Paris_Saint-Germain_F.C..svg.png"
+        },
+        {
+          "name": "Inter",
+          "id": "inter",
+          "seed": 7,
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/FC_Internazionale_Milano_2021.svg/330px-FC_Internazionale_Milano_2021.svg.png"
+        },
+        {
+          "name": "Milan",
+          "id": "milan",
+          "seed": 8,
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Logo_of_AC_Milan.svg/330px-Logo_of_AC_Milan.svg.png"
+        }
       ]
     },
     {
@@ -65,14 +145,54 @@
         "roundGapMinutes": 80
       },
       "teams": [
-        { "name": "RRQ", "id": "rrq", "seed": 1 },
-        { "name": "EVOS", "id": "evos", "seed": 2 },
-        { "name": "ONIC", "id": "onic", "seed": 3 },
-        { "name": "Geek Fam", "id": "geek-fam", "seed": 4 },
-        { "name": "Bigetron", "id": "bigetron", "seed": 5 },
-        { "name": "Alter Ego", "id": "alter-ego", "seed": 6 },
-        { "name": "Liquid ID", "id": "liquid-id", "seed": 7 },
-        { "name": "Aura", "id": "aura", "seed": 8 }
+        {
+          "name": "RRQ",
+          "id": "rrq",
+          "seed": 1,
+          "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/RRQ_%28Rex_Regum_Qeon%29_Logo_%28SVG%29_-_Vector69Com.svg/330px-RRQ_%28Rex_Regum_Qeon%29_Logo_%28SVG%29_-_Vector69Com.svg.png"
+        },
+        {
+          "name": "EVOS",
+          "id": "evos",
+          "seed": 2,
+          "image": "https://upload.wikimedia.org/wikipedia/en/b/bf/EVOS_Esports_logo.png"
+        },
+        {
+          "name": "ONIC",
+          "id": "onic",
+          "seed": 3,
+          "image": "https://onic.gg/assets/Onic_Logo.svg"
+        },
+        {
+          "name": "Geek Fam",
+          "id": "geek-fam",
+          "seed": 4,
+          "image": "https://www.geekfam.asia/wp-content/uploads/2024/04/cropped-Geek-Fam-2020-Favicon-300x300.png"
+        },
+        {
+          "name": "Bigetron",
+          "id": "bigetron",
+          "seed": 5,
+          "image": "https://bigetron.gg/static/images/BigetronLogo.svg"
+        },
+        {
+          "name": "Alter Ego",
+          "id": "alter-ego",
+          "seed": 6,
+          "image": "https://upload.wikimedia.org/wikipedia/id/thumb/e/e4/Logo_Alter_Ego_Esports.png/330px-Logo_Alter_Ego_Esports.png"
+        },
+        {
+          "name": "Liquid ID",
+          "id": "liquid-id",
+          "seed": 7,
+          "image": "https://upload.wikimedia.org/wikipedia/en/thumb/f/f1/Team_Liquid_logo.svg/330px-Team_Liquid_logo.svg.png"
+        },
+        {
+          "name": "Aura",
+          "id": "aura",
+          "seed": 8,
+          "image": "https://www.pikpng.com/pngl/m/464-4649415_aura-esports-gambar-logo-aura-esport-clipart.png"
+        }
       ]
     }
   ]

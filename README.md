@@ -59,8 +59,18 @@ Contoh dengan preset round:
         "roundGapMinutes": 80
       },
       "teams": [
-        { "id": "team-a", "name": "Team A", "seed": 1 },
-        { "id": "team-b", "name": "Team B", "seed": 2 }
+        {
+          "id": "team-a",
+          "name": "Team A",
+          "seed": 1,
+          "image": "https://example.com/team-a.png"
+        },
+        {
+          "id": "team-b",
+          "name": "Team B",
+          "seed": 2,
+          "image": "https://example.com/team-b.png"
+        }
       ]
     }
   ]
@@ -72,6 +82,8 @@ Aturan penting:
 - `id` kategori harus unik
 - `id` tim harus unik di dalam kategori
 - `seed` dipakai untuk urutan bracket
+- untuk gambar tim, isi `image` dengan URL gambar
+- field alias seperti `imageUrl`, `avatarUrl`, atau `logoUrl` juga didukung
 - `roundLabelPreset` bisa diarahkan ke preset seperti `16`, `24`, atau `32`
 - kalau mau custom penuh per event, isi `roundLabels` langsung di kategori
 - `schedule.startAt` adalah pilihan terbaik untuk event nyata karena timer tidak reset saat refresh

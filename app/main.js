@@ -1,6 +1,7 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 import { Gracket } from "https://unpkg.com/gracket@2.1.1/dist/index.js";
 import {
+  buildDefaultAvatarUrl,
   buildRuntimeState,
   cloneData,
   FREE_VOTES_PER_MATCH,
@@ -69,6 +70,10 @@ function formatCountdown(ms) {
   const minutes = Math.floor(safe / 60);
   const seconds = safe % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function getFallbackAvatarUrl(team) {
+  return buildDefaultAvatarUrl(team?.name || "Team");
 }
 
 function setFlashStatus(message, isHtml = false) {
@@ -331,13 +336,18 @@ function decorateBracketTeams() {
     element.setAttribute("data-team-name", team.name);
     element.innerHTML = `
       <span class="bracket-team-decor">
-        <img class="bracket-avatar" src="${escapeHtml(getAvatarUrl(team))}" alt="${escapeHtml(
-          team.name
-        )}" />
+        <img
+          class="bracket-avatar"
+          src="${escapeHtml(getAvatarUrl(team))}"
+          data-fallback-src="${escapeHtml(getFallbackAvatarUrl(team))}"
+          alt="${escapeHtml(team.name)}"
+        />
         <span>${escapeHtml(team.name)}</span>
       </span>
     `;
   });
+
+  attachImageFallbacks(bracketContainer);
 }
 
 function renderScheduleStrip() {
@@ -535,6 +545,19 @@ function renderAll() {
   renderStatus();
 }
 
+function attachImageFallbacks(container = document) {
+  container.querySelectorAll("img[data-fallback-src]").forEach((image) => {
+    if (image.dataset.fallbackBound === "true") return;
+
+    image.dataset.fallbackBound = "true";
+    image.addEventListener("error", () => {
+      const fallbackSrc = image.getAttribute("data-fallback-src") || "";
+      if (!fallbackSrc || image.getAttribute("src") === fallbackSrc) return;
+      image.setAttribute("src", fallbackSrc);
+    });
+  });
+}
+
 async function signInWithGoogle() {
   if (!state.supabase) return;
 
@@ -714,9 +737,12 @@ function renderVoteResultState(match, matchStatus, matchId) {
     <div class="vs">
       <div class="vs-card">
         <div class="vs-head">
-          <img class="modal-avatar" src="${escapeHtml(getAvatarUrl(match.game[0]))}" alt="${escapeHtml(
-            match.game[0].name
-          )}" />
+          <img
+            class="modal-avatar"
+            src="${escapeHtml(getAvatarUrl(match.game[0]))}"
+            data-fallback-src="${escapeHtml(getFallbackAvatarUrl(match.game[0]))}"
+            alt="${escapeHtml(match.game[0].name)}"
+          />
           <div class="vs-team">${escapeHtml(match.game[0].name)}</div>
         </div>
         <div class="vs-meta"><span>Total Vote</span><span>${totalA}</span></div>
@@ -724,9 +750,12 @@ function renderVoteResultState(match, matchStatus, matchId) {
       <div class="vs-pill">VS</div>
       <div class="vs-card">
         <div class="vs-head">
-          <img class="modal-avatar" src="${escapeHtml(getAvatarUrl(match.game[1]))}" alt="${escapeHtml(
-            match.game[1].name
-          )}" />
+          <img
+            class="modal-avatar"
+            src="${escapeHtml(getAvatarUrl(match.game[1]))}"
+            data-fallback-src="${escapeHtml(getFallbackAvatarUrl(match.game[1]))}"
+            alt="${escapeHtml(match.game[1].name)}"
+          />
           <div class="vs-team">${escapeHtml(match.game[1].name)}</div>
         </div>
         <div class="vs-meta"><span>Total Vote</span><span>${totalB}</span></div>
@@ -741,6 +770,8 @@ function renderVoteResultState(match, matchStatus, matchId) {
       <span class="mono">${usage.freeVotesRemaining}</span> tersisa.
     </div>
   `;
+
+  attachImageFallbacks(modalBody);
 }
 
 function renderVoteModal({ roundIndex, gameIndex, preselectTeamIndex = null }) {
@@ -784,9 +815,12 @@ function renderVoteModal({ roundIndex, gameIndex, preselectTeamIndex = null }) {
     <div class="vs">
       <div class="vs-card">
         <div class="vs-head">
-          <img class="modal-avatar" src="${escapeHtml(getAvatarUrl(match.game[0]))}" alt="${escapeHtml(
-            match.game[0].name
-          )}" />
+          <img
+            class="modal-avatar"
+            src="${escapeHtml(getAvatarUrl(match.game[0]))}"
+            data-fallback-src="${escapeHtml(getFallbackAvatarUrl(match.game[0]))}"
+            alt="${escapeHtml(match.game[0].name)}"
+          />
           <div class="vs-team">${escapeHtml(match.game[0].name)}</div>
         </div>
         <div class="vs-meta"><span>Total Vote</span><span>${totalA}</span></div>
@@ -794,9 +828,12 @@ function renderVoteModal({ roundIndex, gameIndex, preselectTeamIndex = null }) {
       <div class="vs-pill">VS</div>
       <div class="vs-card">
         <div class="vs-head">
-          <img class="modal-avatar" src="${escapeHtml(getAvatarUrl(match.game[1]))}" alt="${escapeHtml(
-            match.game[1].name
-          )}" />
+          <img
+            class="modal-avatar"
+            src="${escapeHtml(getAvatarUrl(match.game[1]))}"
+            data-fallback-src="${escapeHtml(getFallbackAvatarUrl(match.game[1]))}"
+            alt="${escapeHtml(match.game[1].name)}"
+          />
           <div class="vs-team">${escapeHtml(match.game[1].name)}</div>
         </div>
         <div class="vs-meta"><span>Total Vote</span><span>${totalB}</span></div>
@@ -809,9 +846,12 @@ function renderVoteModal({ roundIndex, gameIndex, preselectTeamIndex = null }) {
     <div id="modal-vote-actions" class="modal-actions">
       <div class="vs-card">
         <div class="vs-head">
-          <img class="modal-avatar" src="${escapeHtml(getAvatarUrl(match.game[0]))}" alt="${escapeHtml(
-            match.game[0].name
-          )}" />
+          <img
+            class="modal-avatar"
+            src="${escapeHtml(getAvatarUrl(match.game[0]))}"
+            data-fallback-src="${escapeHtml(getFallbackAvatarUrl(match.game[0]))}"
+            alt="${escapeHtml(match.game[0].name)}"
+          />
           <div class="vs-team">${escapeHtml(match.game[0].name)}</div>
         </div>
         <input
@@ -830,9 +870,12 @@ function renderVoteModal({ roundIndex, gameIndex, preselectTeamIndex = null }) {
       </div>
       <div class="vs-card">
         <div class="vs-head">
-          <img class="modal-avatar" src="${escapeHtml(getAvatarUrl(match.game[1]))}" alt="${escapeHtml(
-            match.game[1].name
-          )}" />
+          <img
+            class="modal-avatar"
+            src="${escapeHtml(getAvatarUrl(match.game[1]))}"
+            data-fallback-src="${escapeHtml(getFallbackAvatarUrl(match.game[1]))}"
+            alt="${escapeHtml(match.game[1].name)}"
+          />
           <div class="vs-team">${escapeHtml(match.game[1].name)}</div>
         </div>
         <input
@@ -856,6 +899,7 @@ function renderVoteModal({ roundIndex, gameIndex, preselectTeamIndex = null }) {
     </p>
   `;
   openModal();
+  attachImageFallbacks(modalBody);
 
   const countdownEl = document.getElementById("modal-countdown");
   const updateCountdown = () => {
