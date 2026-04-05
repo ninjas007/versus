@@ -11,6 +11,13 @@
       "label": "Anime One Piece",
       "subtitle": "Who wins the battle?",
       "roundLabelPreset": "8",
+      "schedule": {
+        "startTime": "18:40",
+        "timezoneOffset": "+07:00",
+        "matchDurationMinutes": 25,
+        "matchGapMinutes": 28,
+        "roundGapMinutes": 80
+      },
       "teams": [
         { "name": "Luffy", "id": "luffy", "seed": 1 },
         { "name": "Zoro", "id": "zoro", "seed": 2 },
@@ -27,6 +34,13 @@
       "label": "Football Clash",
       "subtitle": "Big clubs face off",
       "roundLabelPreset": "8",
+      "schedule": {
+        "startTime": "19:10",
+        "timezoneOffset": "+07:00",
+        "matchDurationMinutes": 25,
+        "matchGapMinutes": 28,
+        "roundGapMinutes": 80
+      },
       "teams": [
         { "name": "Real Madrid", "id": "real-madrid", "seed": 1 },
         { "name": "Barcelona", "id": "barcelona", "seed": 2 },
@@ -43,6 +57,13 @@
       "label": "Esports Arena",
       "subtitle": "Squad battle voting",
       "roundLabelPreset": "8",
+      "schedule": {
+        "startTime": "19:35",
+        "timezoneOffset": "+07:00",
+        "matchDurationMinutes": 25,
+        "matchGapMinutes": 28,
+        "roundGapMinutes": 80
+      },
       "teams": [
         { "name": "RRQ", "id": "rrq", "seed": 1 },
         { "name": "EVOS", "id": "evos", "seed": 2 },

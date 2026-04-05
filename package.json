@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "node scripts/dev-server.mjs",
+    "dev:vercel": "vercel dev",
     "check": "node scripts/check.mjs"
   },
   "dependencies": {

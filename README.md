@@ -52,6 +52,12 @@ Contoh dengan preset round:
       "label": "My Event",
       "subtitle": "Vote your champion",
       "roundLabelPreset": "16",
+      "schedule": {
+        "startAt": "2026-05-20T19:00:00+07:00",
+        "matchDurationMinutes": 25,
+        "matchGapMinutes": 28,
+        "roundGapMinutes": 80
+      },
       "teams": [
         { "id": "team-a", "name": "Team A", "seed": 1 },
         { "id": "team-b", "name": "Team B", "seed": 2 }
@@ -68,6 +74,8 @@ Aturan penting:
 - `seed` dipakai untuk urutan bracket
 - `roundLabelPreset` bisa diarahkan ke preset seperti `16`, `24`, atau `32`
 - kalau mau custom penuh per event, isi `roundLabels` langsung di kategori
+- `schedule.startAt` adalah pilihan terbaik untuk event nyata karena timer tidak reset saat refresh
+- untuk demo harian, Anda juga bisa pakai `schedule.startTime` + `timezoneOffset`
 - setelah edit JSON, commit/push saja dan Vercel akan redeploy
 
 ## Setup lokal
@@ -85,7 +93,16 @@ npm install
 4. Jalankan lokal:
 
 ```bash
-npx vercel dev
+npm run dev
+```
+
+Catatan:
+
+- `npm run dev` memakai server lokal biasa, jadi tidak perlu `vercel login`.
+- Kalau Anda tetap ingin emulator resmi Vercel, pakai:
+
+```bash
+npm run dev:vercel
 ```
 
 ## Supabase Auth

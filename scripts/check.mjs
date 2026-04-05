@@ -18,6 +18,7 @@ const files = [
   "api/payments/paypal/return.js",
   "api/payments/paypal/cancel.js",
   "api/webhooks/midtrans.js",
+  "scripts/dev-server.mjs",
   "app/main.js"
 ];
 
