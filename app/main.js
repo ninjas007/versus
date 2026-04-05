@@ -8,7 +8,6 @@ import {
   getMatchId,
   getMatchStatus,
   hasResolvedTeams,
-  ROUND_LABELS,
   teamKey
 } from "../lib/tournament-data.js";
 
@@ -187,11 +186,23 @@ function getUsageForMatch(matchId) {
 
 function rebuildRuntime() {
   if (!state.activeCategoryId) return;
-  state.runtime = buildRuntimeState(state.activeCategoryId, state.totals || {}, new Date());
+  const category =
+    state.categories.find((item) => item.id === state.activeCategoryId) || null;
+
+  if (!category) {
+    state.runtime = null;
+    return;
+  }
+
+  state.runtime = buildRuntimeState(category, state.totals || {}, new Date());
 }
 
 function getCurrentCategory() {
   return state.runtime?.category || null;
+}
+
+function getRoundLabels() {
+  return state.runtime?.roundLabels || [];
 }
 
 function renderCategoryBadges() {
@@ -224,8 +235,9 @@ function renderCategorySummary() {
   if (!category) return;
 
   const currentRound = getCurrentRoundIndex(state.runtime?.data || []);
+  const roundLabels = getRoundLabels();
   const label =
-    currentRound === -1 ? "Selesai" : ROUND_LABELS[currentRound] || `Round ${currentRound + 1}`;
+    currentRound === -1 ? "Selesai" : roundLabels[currentRound] || `Round ${currentRound + 1}`;
   const liveMatch = getLiveMatch();
   const nextCount = getScheduleItems().filter((item) => item.status.key === "upcoming").length;
 
@@ -296,7 +308,7 @@ function createBracket() {
   state.bracket = new Gracket("#bracket", {
     src: cloneData(state.runtime.data),
     byeLabel: "BYE",
-    roundLabels: ROUND_LABELS,
+    roundLabels: getRoundLabels(),
     cornerRadius: 8,
     canvasLineColor: "rgba(200, 210, 230, 0.55)",
     canvasLineWidth: 2
@@ -330,6 +342,7 @@ function decorateBracketTeams() {
 
 function renderScheduleStrip() {
   const items = getScheduleItems();
+  const roundLabels = getRoundLabels();
 
   if (!items.length) {
     scheduleStrip.innerHTML =
@@ -351,7 +364,7 @@ function renderScheduleStrip() {
     card.innerHTML = `
       <div class="schedule-top">
         <div class="schedule-title">${escapeHtml(
-          ROUND_LABELS[item.roundIndex] || `Round ${item.roundIndex + 1}`
+          roundLabels[item.roundIndex] || `Round ${item.roundIndex + 1}`
         )}</div>
         <div class="match-state ${item.status.key}">${
           item.status.key === "live" ? "Live" : "Soon"

@@ -12,7 +12,8 @@ Arsitektur yang dipakai sekarang:
 Catatan:
 
 - Auth, vote, credit, dan payment sudah berbasis database.
-- Daftar kategori, tim, dan generator bracket masih disimpan di file [lib/tournament-data.js](/c:/laragon/www/tournament/lib/tournament-data.js).
+- Daftar kategori dan tim sekarang disimpan di file JSON [data/tournaments.json](/c:/laragon/www/tournament/data/tournaments.json).
+- Jadi kalau Anda ingin ganti event, cukup edit file JSON itu lalu `push`; Vercel akan auto deploy ulang.
 - Kalau nanti Anda ingin panel admin penuh, langkah berikutnya adalah memindahkan data kategori/tim/jadwal ke tabel Supabase juga.
 
 ## Flow bisnis
@@ -30,6 +31,44 @@ Catatan:
 - `api/`: Vercel Functions
 - `lib/`: helper shared antara front-end dan server
 - `supabase/schema.sql`: schema database dan RPC
+- `data/tournaments.json`: source data turnamen yang bisa Anda edit manual
+
+## Ganti data turnamen
+
+Edit file [data/tournaments.json](/c:/laragon/www/tournament/data/tournaments.json).
+
+Contoh dengan preset round:
+
+```json
+{
+  "roundLabelPresets": {
+    "16": ["Round of 16", "Quarterfinal", "Semifinal", "Final", "Champion"],
+    "24": ["Play-In", "Top 16", "Quarterfinal", "Semifinal", "Final", "Champion"],
+    "32": ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Final", "Champion"]
+  },
+  "categories": [
+    {
+      "id": "my-event",
+      "label": "My Event",
+      "subtitle": "Vote your champion",
+      "roundLabelPreset": "16",
+      "teams": [
+        { "id": "team-a", "name": "Team A", "seed": 1 },
+        { "id": "team-b", "name": "Team B", "seed": 2 }
+      ]
+    }
+  ]
+}
+```
+
+Aturan penting:
+
+- `id` kategori harus unik
+- `id` tim harus unik di dalam kategori
+- `seed` dipakai untuk urutan bracket
+- `roundLabelPreset` bisa diarahkan ke preset seperti `16`, `24`, atau `32`
+- kalau mau custom penuh per event, isi `roundLabels` langsung di kategori
+- setelah edit JSON, commit/push saja dan Vercel akan redeploy
 
 ## Setup lokal
 

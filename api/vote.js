@@ -8,6 +8,7 @@ import {
   teamKey,
   validateMatchSelection
 } from "../lib/tournament-data.js";
+import { loadTournamentCategories } from "../lib/tournament-config.server.js";
 
 function normalizeQuantity(value) {
   const quantity = Math.max(1, Math.floor(Number(value) || 0));
@@ -34,8 +35,10 @@ export default async function handler(req, res) {
     const matchId = String(body.matchId || "").trim();
     const teamId = String(body.teamId || "").trim().toLowerCase();
     const quantity = normalizeQuantity(body.quantity);
+    const categories = await loadTournamentCategories();
+    const category = getCategoryById(categories, categoryId);
 
-    if (!getCategoryById(categoryId)) {
+    if (!category) {
       return sendJson(res, 400, {
         error: "INVALID_CATEGORY",
         message: "Kategori tidak ditemukan."
@@ -53,7 +56,7 @@ export default async function handler(req, res) {
     }
 
     const totals = buildTotalsMap(totalRows);
-    const validation = validateMatchSelection(categoryId, totals, matchId, teamId, new Date());
+    const validation = validateMatchSelection(category, totals, matchId, teamId, new Date());
 
     if (!validation.ok) {
       return sendJson(res, 400, {
@@ -107,7 +110,7 @@ export default async function handler(req, res) {
     }
 
     const refreshedTotals = buildTotalsMap(newTotalRows);
-    const runtime = buildRuntimeState(categoryId, refreshedTotals, new Date());
+    const runtime = buildRuntimeState(category, refreshedTotals, new Date());
     const updatedMatch =
       runtime.matches.find((item) => item.matchId === matchId) || validation.match;
 

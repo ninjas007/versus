@@ -7,6 +7,7 @@ const files = [
   "lib/http.js",
   "lib/supabase.js",
   "lib/auth.js",
+  "lib/tournament-config.server.js",
   "lib/payments/paypal.js",
   "lib/payments/midtrans.js",
   "api/public-config.js",

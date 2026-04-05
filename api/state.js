@@ -8,23 +8,29 @@ import {
   getCategoryById,
   getPublicCategories
 } from "../lib/tournament-data.js";
+import { loadTournamentCategories } from "../lib/tournament-config.server.js";
 
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     return sendMethodNotAllowed(res, ["GET"]);
   }
 
-  const categoryId = String(req.query.category || "").trim();
-  const category = getCategoryById(categoryId || getPublicCategories()[0].id);
-
-  if (!category) {
-    return sendJson(res, 400, {
-      error: "INVALID_CATEGORY",
-      message: "Kategori tidak ditemukan."
-    });
-  }
-
   try {
+    const categories = await loadTournamentCategories();
+    const publicCategories = getPublicCategories(categories);
+    const categoryId = String(req.query.category || "").trim();
+    const category = getCategoryById(
+      categories,
+      categoryId || publicCategories[0]?.id
+    );
+
+    if (!category) {
+      return sendJson(res, 400, {
+        error: "INVALID_CATEGORY",
+        message: "Kategori tidak ditemukan."
+      });
+    }
+
     const service = getServiceClient();
     const { data: totalRows, error: totalError } = await service
       .from("vote_totals")
@@ -36,7 +42,7 @@ export default async function handler(req, res) {
     }
 
     const totals = buildTotalsMap(totalRows);
-    const runtime = buildRuntimeState(category.id, totals, new Date());
+    const runtime = buildRuntimeState(category, totals, new Date());
     const { user } = await getUserFromRequest(req);
 
     let userPayload = null;
@@ -80,7 +86,7 @@ export default async function handler(req, res) {
     }
 
     return sendJson(res, 200, {
-      categories: getPublicCategories(),
+      categories: publicCategories,
       activeCategoryId: category.id,
       totals,
       runtime: {

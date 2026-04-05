@@ -1,0 +1,58 @@
+{
+  "roundLabelPresets": {
+    "8": ["Quarterfinal", "Semifinal", "Final", "Champion"],
+    "16": ["Round of 16", "Quarterfinal", "Semifinal", "Final", "Champion"],
+    "24": ["Play-In", "Top 16", "Quarterfinal", "Semifinal", "Final", "Champion"],
+    "32": ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Final", "Champion"]
+  },
+  "categories": [
+    {
+      "id": "one-piece",
+      "label": "Anime One Piece",
+      "subtitle": "Who wins the battle?",
+      "roundLabelPreset": "8",
+      "teams": [
+        { "name": "Luffy", "id": "luffy", "seed": 1 },
+        { "name": "Zoro", "id": "zoro", "seed": 2 },
+        { "name": "Sanji", "id": "sanji", "seed": 3 },
+        { "name": "Law", "id": "law", "seed": 4 },
+        { "name": "Shanks", "id": "shanks", "seed": 5 },
+        { "name": "Ace", "id": "ace", "seed": 6 },
+        { "name": "Sabo", "id": "sabo", "seed": 7 },
+        { "name": "Mihawk", "id": "mihawk", "seed": 8 }
+      ]
+    },
+    {
+      "id": "football",
+      "label": "Football Clash",
+      "subtitle": "Big clubs face off",
+      "roundLabelPreset": "8",
+      "teams": [
+        { "name": "Real Madrid", "id": "real-madrid", "seed": 1 },
+        { "name": "Barcelona", "id": "barcelona", "seed": 2 },
+        { "name": "Liverpool", "id": "liverpool", "seed": 3 },
+        { "name": "Arsenal", "id": "arsenal", "seed": 4 },
+        { "name": "Bayern", "id": "bayern", "seed": 5 },
+        { "name": "PSG", "id": "psg", "seed": 6 },
+        { "name": "Inter", "id": "inter", "seed": 7 },
+        { "name": "Milan", "id": "milan", "seed": 8 }
+      ]
+    },
+    {
+      "id": "esports",
+      "label": "Esports Arena",
+      "subtitle": "Squad battle voting",
+      "roundLabelPreset": "8",
+      "teams": [
+        { "name": "RRQ", "id": "rrq", "seed": 1 },
+        { "name": "EVOS", "id": "evos", "seed": 2 },
+        { "name": "ONIC", "id": "onic", "seed": 3 },
+        { "name": "Geek Fam", "id": "geek-fam", "seed": 4 },
+        { "name": "Bigetron", "id": "bigetron", "seed": 5 },
+        { "name": "Alter Ego", "id": "alter-ego", "seed": 6 },
+        { "name": "Liquid ID", "id": "liquid-id", "seed": 7 },
+        { "name": "Aura", "id": "aura", "seed": 8 }
+      ]
+    }
+  ]
+}
