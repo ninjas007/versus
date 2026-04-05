@@ -29,6 +29,9 @@ const scheduleStrip = document.getElementById("schedule-strip");
 const categorySummary = document.getElementById("category-summary");
 const refreshBtn = document.getElementById("reset-bracket");
 const bracketContainer = document.getElementById("bracket");
+const loginBox = loginBtn?.closest(".login-box") || null;
+const logoutWrap = logoutBtn?.closest(".panel-footer") || null;
+const refreshWrap = refreshBtn?.closest(".panel-footer") || null;
 
 const state = {
   config: null,
@@ -274,6 +277,30 @@ function renderLoginMeta() {
     Login Google: <span class="mono">${escapeHtml(email)}</span><br>
     Credit vote berbayar: <span class="mono">${credits}</span>
   `;
+}
+
+function renderAuthControls() {
+  const isLoggedIn = Boolean(state.session?.user);
+
+  if (loginBox) {
+    loginBox.hidden = isLoggedIn;
+  }
+
+  if (logoutWrap) {
+    logoutWrap.hidden = !isLoggedIn;
+  }
+
+  if (logoutBtn) {
+    logoutBtn.hidden = !isLoggedIn;
+  }
+
+  if (refreshWrap) {
+    refreshWrap.hidden = true;
+  }
+
+  if (refreshBtn) {
+    refreshBtn.hidden = true;
+  }
 }
 
 function renderStatus() {
@@ -541,6 +568,7 @@ function renderAll() {
   createBracket();
   renderCategorySummary();
   renderScheduleStrip();
+  renderAuthControls();
   renderLoginMeta();
   renderStatus();
 }
@@ -1164,7 +1192,7 @@ logoutBtn.addEventListener("click", async () => {
   await loadState(state.activeCategoryId);
 });
 
-refreshBtn.addEventListener("click", async () => {
+refreshBtn?.addEventListener("click", async () => {
   await refreshState();
 });
 
