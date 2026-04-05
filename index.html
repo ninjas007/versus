@@ -731,13 +731,9 @@
 						terkunci sampai timnya sudah pasti.
 					</p>
 					<div class="login-box">
-						<input
-							id="email-input"
-							type="email"
-							placeholder="login email (dummy)..."
-							autocomplete="email"
-						/>
-						<button id="login-btn" type="button">Login</button>
+						<button id="login-btn" class="primary-btn" type="button">
+							Login Dengan Google
+						</button>
 					</div>
 					<div class="panel-footer" style="margin-top:0; margin-bottom:14px;">
 						<button id="logout-btn" class="ghost-btn" type="button">
@@ -747,7 +743,7 @@
 					<div id="login-meta" class="login-meta"></div>
 					<div class="panel-footer">
 						<button id="reset-bracket" class="ghost-btn" type="button">
-							Reset Data
+							Refresh Data
 						</button>
 					</div>
 					<div id="status" class="status"></div>
@@ -767,7 +763,8 @@
 			</div>
 		</div>
 
-		<script type="module">
+		<!-- Active client app lives in /app/main.js. -->
+		<script type="module" src="/app/main.js">
 			import {
 				Gracket,
 				generateTournamentWithByes,
